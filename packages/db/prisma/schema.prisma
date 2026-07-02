@@ -1,0 +1,85 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User{
+  id              Int       @id   @default(autoincrement())
+  username        String
+  email           String
+  password        String
+  refreshToken?   String
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  repositories    Repository[]
+}
+
+model Repository{
+  id              Int       @id   @default(autoincrement())
+  userId          Int
+  repoUrl         String
+  branch          String
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  user            User            @relation(fields:[userId], references:[id])
+}
+
+model Summary{
+  id              Int       @id   @default (autoincrement())
+  repositoryId    Int
+  summary         String
+  createdAt       DateTime()      @default(now())
+  updatedAt       DateTime()      @updatedAt
+  repository      Repository      @relation(fields:[repositoryId], where:[id])
+}
+
+model Question{
+  id              Int       @id   @default(autoincrement())
+  
+}
+
+model repo_files (
+  repo_id,
+  path,
+  blob_sha,
+  size,
+  language,
+  is_generated,
+  indexed_at
+);
+
+repo_symbols (
+  repo_id,
+  path,
+  blob_sha,
+  symbol_name,
+  symbol_type,
+  start_line,
+  end_line,
+  summary
+);
+
+repo_edges (
+  repo_id,
+  from_path,
+  from_symbol,
+  to_path,
+  to_symbol,
+  edge_type
+);
+
+repo_maps (
+  repo_id,
+  base_commit_sha,
+  map_text,
+  indexed_at
+);
