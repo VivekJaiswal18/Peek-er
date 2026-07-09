@@ -27,4 +27,4 @@ RUN pnpm --filter backend build
 RUN pnpm --filter @repo/kafka build
 RUN pnpm --filter @repo/db build
 
-ENTRYPOINT ["node", "./apps/backend/dist/index.js"]
+ENTRYPOINT ["node", "./apps/backend/dist/index.js"] 
