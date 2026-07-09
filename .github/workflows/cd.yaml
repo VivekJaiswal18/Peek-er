@@ -6,7 +6,7 @@ on:
 
 permissions:
   id_token: write
-  content: read
+  contents: read
 
 jobs:
   changes:
