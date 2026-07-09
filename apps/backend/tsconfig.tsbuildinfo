@@ -1,1 +1,1 @@
-{"root":["./src/index.ts"],"version":"6.0.3"}
+{"root":["./src/index.ts","./src/middlewares/auth.middleware.ts","./src/utils/tokens.ts"],"version":"6.0.3"}

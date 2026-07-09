@@ -10,7 +10,11 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "kafkajs": "^2.2.4",
+    "@aws-sdk/client-ecs": "^3.1081.0",
+    "@repo/db": "workspace:*",
+    "@repo/kafka": "workspace:*",
+    "@types/jsonwebtoken": "^9.0.10",
+    "jsonwebtoken": "^9.0.3",
     "typescript": "^6.0.3"
   }
 }

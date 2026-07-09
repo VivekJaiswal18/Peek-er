@@ -1,9 +1,11 @@
 interface Topics{
-    REVIEW_JOB: string,
+    INGEST_JOB: string,
     REVIEW_SUMMARY: string,
+    COMMENT_SUMMARY: string
 }
 
 export const TOPICS: Topics = {
-    REVIEW_JOB: "review-job",
-    REVIEW_SUMMARY: "review-summary"
+    INGEST_JOB: "ingest-job",
+    REVIEW_SUMMARY: "review-summary-job",
+    COMMENT_SUMMARY: "review-comment-job"
 }

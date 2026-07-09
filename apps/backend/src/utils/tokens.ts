@@ -19,9 +19,10 @@ export async function generateRefreshToken(username: string, email: string){
         }
     )
 };
-export async function generateAccessToken(email: string){
+export async function generateAccessToken(id: Number, email: string){
     return jwt.sign(
         {
+            sub: id,
             email
         },
         accessTokenSecret!,

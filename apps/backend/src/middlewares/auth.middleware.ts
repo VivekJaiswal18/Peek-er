@@ -4,6 +4,11 @@ import jwt from "jsonwebtoken";
 import { nextTick } from "process";
 import { runInNewContext } from "vm";
 
+type AccesTokenPayload = {
+    sub: string,
+    email: string
+}
+
 export async function authenticate(req: Request, res: Response, next: NextFunction){
     try{
     const authHeader = req.headers.authorization;
@@ -13,9 +18,14 @@ export async function authenticate(req: Request, res: Response, next: NextFuncti
     }
     
     const token = authHeader.split(" ")[1]
-    const decodedToken = await jwt.verify(token, process.env.ACCESS_TOKEN_SECRET!)
+    const decodedToken = await jwt.verify(token, process.env.ACCESS_TOKEN_SECRET!) as AccesTokenPayload
     // @ts-ignore
-    req.user = decodedToken
+    // req.user = decodedToken
+    req.user = {
+        id: Number(decodedToken.sub),
+        email: decodedToken.email
+    }
+
     next()
 }
 catch{

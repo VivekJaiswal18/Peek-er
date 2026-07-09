@@ -1,0 +1,1 @@
+{"root":["./src/client.ts","./src/index.ts","./src/kafka.consumer.ts","./src/kafka.producer.ts","./src/setup.ts","./src/topics.ts"],"version":"6.0.3"}
