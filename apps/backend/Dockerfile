@@ -2,7 +2,7 @@ FROM node:22-alpine
 
 RUN corepack enable
 
-WORKDIR home/app
+WORKDIR /home/app
 
 COPY package.json ./package.json
 COPY pnpm-workspace.yaml ./pnpm-workspace.yaml
