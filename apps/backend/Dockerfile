@@ -29,4 +29,4 @@ RUN pnpm --filter backend build
 
 EXPOSE 8080
 
-ENTRYPOINT ["node", "./apps/backend/dist/index.js"] 
+ENTRYPOINT ["node", "./apps/backend/dist/index.js"]
