@@ -5,7 +5,7 @@ RUN corepack enable
 WORKDIR home/app
 
 COPY package.json ./package.json
-COPY pnpm-workspace.yamml ./pnpm-workspace.yaml
+COPY pnpm-workspace.yaml ./pnpm-workspace.yaml
 COPY pnpm-lock.yaml ./pnpm-lock.yaml
 
 COPY packages/kafka/package.json ./packages/kafka/package.json
@@ -23,8 +23,10 @@ COPY apps/backend/tsconfig.json ./apps/backend/tsconfig.json
 COPY apps/backend/src/ ./apps/backend/src
 
 RUN pnpm install --frozen-lockfile
-RUN pnpm --filter backend build
 RUN pnpm --filter @repo/kafka build
 RUN pnpm --filter @repo/db build
+RUN pnpm --filter backend build
+
+EXPOSE 8080
 
 ENTRYPOINT ["node", "./apps/backend/dist/index.js"] 

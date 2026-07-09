@@ -22,4 +22,4 @@ COPY --from=builder /home/app/apps/web/public ./apps/web/public
 
 EXPOSE 3000
 
-CMD["pnpm", "start"] 
+CMD ["node", "apps/web/server.js"] 
