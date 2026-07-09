@@ -25,7 +25,9 @@ const ingestWorker = ingestConsumer(async(payload)=>{
     } = payload
 
     const repository = await prisma.repository.findUnique({
-        where: payload.repositoryId
+        where: {
+            id: payload.repositoryId
+        }
     })
     
     if(!repository) throw new Error("No repository found")

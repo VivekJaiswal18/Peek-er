@@ -1,1 +1,1 @@
-{"root":["./src/index.ts"],"errors":true,"version":"6.0.3"}
+{"root":["./src/index.ts","./src/kafka-worker.ts"],"errors":true,"version":"6.0.3"}
