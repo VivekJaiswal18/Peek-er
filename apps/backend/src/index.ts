@@ -75,7 +75,7 @@ app.post("/signup", async (req: Request, res: Response)=>{
 //     ingestProducer()
 // })
 
-app.post("/github/webhook", authenticate, async (req, res) => {
+app.post("/github/webhook", authenticate, async (req: Request, res: Response) => {
   const event = req.headers["x-github-event"];
   const deliveryId = String(req.headers["x-github-delivery"] ?? v4());
   const body = req.body;
@@ -154,7 +154,7 @@ app.post("/github/webhook", authenticate, async (req, res) => {
   return res.status(200).json({ message: "Ignored event" });
 });
 
-app.post("/review-run", authenticate, async(req, res)=>{
+app.post("/review-run", authenticate, async(req: Request, res: Response)=>{
 
   // const payload: PrReviewRequestPayload = {
   //   eventId: string;
