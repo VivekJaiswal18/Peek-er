@@ -27,7 +27,7 @@ export default async function RepositoryPage({ params }: Props) {
             >
               Ask repo
             </Link>
-            <button className="rounded-md bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700">
+            <button className="rounded-md bg-orange-600 px-4 py-2 text-sm font-semibold text-white hover:bg-orange-700">
               Run review
             </button>
           </div>

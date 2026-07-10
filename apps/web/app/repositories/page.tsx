@@ -1,67 +1,29 @@
 import Link from "next/link";
-import { AppShell, Badge, SectionTitle } from "../components/app-shell";
+import { AppShell, Badge, Icon, SectionTitle } from "../components/app-shell";
 import { repositories } from "../components/data";
 
-export default function RepositoriesPage() {
-  return (
-    <AppShell>
-      <div className="space-y-6">
-        <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-          <SectionTitle
-            title="Repositories"
-            description="Connect repos, inspect indexing status, and start manual reviews for active pull requests."
-          />
-          <button className="w-fit rounded-md bg-slate-950 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800">
-            Connect GitHub repo
-          </button>
-        </div>
+type Props = { searchParams: Promise<{ github?: string }> };
 
-        <div className="rounded-md border border-slate-200 bg-white">
-          <div className="grid grid-cols-12 border-b border-slate-200 px-4 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500">
-            <span className="col-span-5">Repository</span>
-            <span className="col-span-2 hidden md:block">Language</span>
-            <span className="col-span-2 hidden md:block">Open PRs</span>
-            <span className="col-span-3 text-right">Status</span>
-          </div>
-          <div className="divide-y divide-slate-100">
-            {repositories.map((repo) => (
-              <Link
-                className="grid grid-cols-12 items-center gap-3 px-4 py-4 hover:bg-slate-50"
-                href={`/repositories/${repo.owner}/${repo.name}`}
-                key={`${repo.owner}/${repo.name}`}
-              >
-                <div className="col-span-9 md:col-span-5">
-                  <p className="text-sm font-semibold">
-                    {repo.owner}/{repo.name}
-                  </p>
-                  <p className="mt-1 text-xs text-slate-500">
-                    Last run {repo.lastRun}
-                  </p>
-                </div>
-                <p className="col-span-2 hidden text-sm text-slate-600 md:block">
-                  {repo.language}
-                </p>
-                <p className="col-span-2 hidden text-sm text-slate-600 md:block">
-                  {repo.openPulls}
-                </p>
-                <div className="col-span-3 flex justify-end">
-                  <Badge
-                    tone={
-                      repo.risk === "High"
-                        ? "red"
-                        : repo.risk === "Medium"
-                          ? "yellow"
-                          : "green"
-                    }
-                  >
-                    {repo.status}
-                  </Badge>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
+export default async function RepositoriesPage({ searchParams }: Props) {
+  const { github } = await searchParams;
+  return <AppShell><div className="space-y-6">
+    <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+      <SectionTitle title="Repositories" description="Manage the codebases Peek-er reviews and the context available to its agents." />
+      <Link href="https://github.com/apps/peek-er/installations/new" className="inline-flex w-fit items-center gap-2 rounded-lg bg-[#17171a] px-4 py-2.5 text-xs font-semibold text-white transition hover:bg-[#ff5a1f] dark:bg-[#ff5a1f] dark:hover:bg-orange-600">
+      <Icon name="github" className="h-4 w-4" />
+      Connect GitHub repository 
+      <span className="text-orange-400 dark:text-white">→</span>
+      </Link> 
       </div>
-    </AppShell>
-  );
+
+    {github === "not-configured" && <div role="alert" className="flex flex-col gap-3 rounded-xl border border-orange-200 bg-orange-50 px-4 py-3 text-xs text-orange-900 sm:flex-row sm:items-center"><span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-orange-500 font-bold text-white">!</span><div><p className="font-semibold">GitHub App installation needs configuration</p><p className="mt-0.5 text-orange-700">Set <code className="font-mono">GITHUB_APP_SLUG</code> or <code className="font-mono">GITHUB_APP_INSTALL_URL</code> in the web app environment, then try again.</p></div></div>}
+
+    <section className="relative overflow-hidden rounded-2xl bg-[#0b0b0e] px-5 py-6 text-white sm:px-7"><div className="absolute -right-16 -top-24 h-56 w-56 rounded-full bg-orange-500/15 blur-3xl" /><div className="relative flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between"><div className="flex items-start gap-4"><span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[#ff5a1f]"><Icon name="github" className="h-5 w-5" /></span><div><h2 className="text-base font-semibold tracking-tight">Review more code with GitHub</h2><p className="mt-1 max-w-2xl text-[11px] leading-5 text-slate-400">Install the Peek-er GitHub App, choose repositories, and receive automatic reviews on every pull request. You control repository access from GitHub at any time.</p><div className="mt-3 flex flex-wrap gap-4 text-[9px] font-medium text-slate-300"><span>✓ Read-only code access</span><span>✓ Select repositories</span><span>✓ Revoke anytime</span></div></div></div><Link href="/api/github/connect" className="inline-flex shrink-0 items-center justify-center gap-2 rounded-lg bg-white px-4 py-2.5 text-xs font-bold text-black hover:bg-orange-50">Install GitHub App <span className="text-[#ff5a1f]">→</span></Link></div></section>
+
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"><div className="flex items-center gap-2"><h2 className="text-sm font-semibold">Connected repositories</h2><span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-500 dark:bg-slate-800">{repositories.length}</span></div><div className="flex gap-2"><label className="relative"><Icon name="search" className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" /><input className="h-9 w-56 rounded-lg border border-slate-200 bg-white pl-9 pr-3 text-[11px] outline-none focus:border-orange-400 dark:border-slate-700 dark:bg-slate-900" placeholder="Search repositories" /></label><button className="rounded-lg border border-slate-200 bg-white px-3 text-[11px] font-medium text-slate-500 dark:border-slate-700 dark:bg-slate-900">All repositories⌄</button></div></div>
+
+    <section className="overflow-hidden rounded-xl border border-[#e4e7ec] bg-white dark:border-slate-800 dark:bg-[#101621]"><div className="hidden grid-cols-12 border-b border-[#edf0f3] bg-[#fafbfc] px-5 py-3 text-[9px] font-semibold uppercase tracking-[.08em] text-slate-400 dark:border-slate-800 dark:bg-slate-900/50 md:grid"><span className="col-span-5">Repository</span><span className="col-span-2">Review health</span><span className="col-span-2">Open pull requests</span><span className="col-span-2">Last activity</span><span /></div><div className="divide-y divide-[#edf0f3] dark:divide-slate-800">{repositories.map((repo, index) => <Link href={`/repositories/${repo.owner}/${repo.name}`} key={`${repo.owner}/${repo.name}`} className="group grid gap-4 px-5 py-4 transition hover:bg-orange-50/30 dark:hover:bg-orange-500/5 md:grid-cols-12 md:items-center"><div className="md:col-span-5"><div className="flex items-center gap-3"><span className="grid h-9 w-9 place-items-center rounded-lg border border-slate-200 bg-slate-50 text-slate-500 dark:border-slate-700 dark:bg-slate-800"><Icon name="repo" className="h-4 w-4" /></span><div><p className="text-[12px] font-semibold group-hover:text-orange-700">{repo.owner}/{repo.name}</p><div className="mt-1 flex items-center gap-2 text-[9px] text-slate-400"><span className={`h-1.5 w-1.5 rounded-full ${index===0?"bg-sky-500":index===1?"bg-cyan-500":"bg-blue-500"}`} />{repo.language}<span>•</span><span>Private</span></div></div></div></div><div className="md:col-span-2"><div className="flex items-center gap-2"><span className="text-xs font-semibold">{repo.health}%</span><div className="h-1.5 w-16 rounded-full bg-slate-100 dark:bg-slate-800"><div className={`h-full rounded-full ${repo.health>90?"bg-emerald-500":repo.health>80?"bg-orange-400":"bg-rose-500"}`} style={{width:`${repo.health}%`}} /></div></div></div><div className="md:col-span-2"><span className="text-xs font-semibold">{repo.openPulls}</span><span className="ml-1 text-[10px] text-slate-400">open</span></div><div className="md:col-span-2"><p className="text-[10px] text-slate-500">{repo.lastRun}</p><Badge tone={repo.risk === "High" ? "red" : repo.risk === "Medium" ? "yellow" : "green"}>{repo.status}</Badge></div><Icon name="chevron" className="hidden h-4 w-4 text-slate-300 md:block" /></Link>)}</div></section>
+
+    <div className="flex items-center justify-between text-[10px] text-slate-400"><p>Showing {repositories.length} repositories</p><Link href="/settings" className="font-medium text-slate-600 hover:text-orange-600 dark:text-slate-300">Manage GitHub access →</Link></div>
+  </div></AppShell>;
 }

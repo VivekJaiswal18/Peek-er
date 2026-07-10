@@ -3,8 +3,10 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --background: #f7f8fa;
-  --foreground: #111827;
+  --background: #f7f7f8;
+  --foreground: #121214;
+  --accent: #ff5a1f;
+  --accent-hover: #e94c12;
 }
 
 .dark {
@@ -21,11 +23,23 @@ body {
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  letter-spacing: -0.012em;
 }
 
 * {
   box-sizing: border-box;
+}
+
+::selection {
+  background: #ff5a1f;
+  color: white;
+}
+
+h1,
+h2,
+h3 {
+  text-wrap: balance;
 }
 
 a {

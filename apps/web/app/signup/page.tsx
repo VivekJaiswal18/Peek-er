@@ -1,13 +1,48 @@
+'use client'
 import Link from "next/link";
 import { ThemeToggle } from "../components/theme-toggle";
+import React, {useState} from "react"
+import {useRouter} from "next/navigation"
 
 export default function SignupPage() {
+  const router = useRouter()
+  const [formData, setFormData] = useState({
+    username: "",
+    email: "",
+    password: ""
+  })
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>)=>{
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    })
+  }
+  const handleSubmit = async (e: React.FormEvent)=>{
+    e.preventDefault()
+    try{
+    const response = await fetch("http://localhost:8080/signup",
+      {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(formData)
+      })
+      console.log(response)
+      router.replace("/dashboard")
+    }
+    catch(error){
+      console.log("getting error:", error)
+    }
+  }
   return (
-    <main className="min-h-screen bg-[#f7f8fa] text-slate-950 dark:bg-slate-950 dark:text-slate-50">
+    <main className="min-h-screen bg-[#f7f7f8] text-slate-950 dark:bg-slate-950 dark:text-slate-50">
       <div className="mx-auto flex min-h-screen max-w-7xl flex-col px-4 py-6 sm:px-6 lg:px-8">
         <header className="flex items-center justify-between">
           <Link className="flex items-center gap-3" href="/">
-            <span className="grid h-9 w-9 place-items-center rounded-md bg-emerald-600 text-sm font-semibold text-white">
+            <span className="grid h-9 w-9 place-items-center rounded-md bg-orange-600 text-sm font-semibold text-white">
               P
             </span>
             <span className="text-sm font-semibold">Peek-er</span>
@@ -17,7 +52,7 @@ export default function SignupPage() {
 
         <div className="grid flex-1 items-center gap-10 py-12 lg:grid-cols-[0.95fr_1.05fr]">
           <section className="hidden lg:block">
-            <p className="text-sm font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-400">
+            <p className="text-sm font-semibold uppercase tracking-wide text-orange-700 dark:text-orange-400">
               Start with your first repo
             </p>
             <h1 className="mt-4 text-4xl font-semibold tracking-normal">
@@ -45,42 +80,46 @@ export default function SignupPage() {
             <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
               Create a workspace for your AI code reviewer.
             </p>
-            <form className="mt-6 space-y-4">
+            <form onSubmit={handleSubmit} className="mt-6 space-y-4">
               <label className="block">
                 <span className="text-sm font-medium">Name</span>
-                <input
-                  className="mt-2 h-11 w-full rounded-md border border-slate-200 bg-slate-50 px-3 text-sm outline-none focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100 dark:border-slate-700 dark:bg-slate-950 dark:focus:ring-emerald-900/40"
-                  placeholder="Vivek"
+                <input type="name" value={formData.username} onChange={handleChange}
+                  className="mt-2 h-11 w-full rounded-md border border-slate-200 bg-slate-50 px-3 text-sm outline-none focus:border-orange-500 focus:bg-white focus:ring-2 focus:ring-orange-100 dark:border-slate-700 dark:bg-slate-950 dark:focus:ring-orange-900/40"
+                  placeholder="name" name="username"
                 />
               </label>
               <label className="block">
                 <span className="text-sm font-medium">Email</span>
                 <input
-                  className="mt-2 h-11 w-full rounded-md border border-slate-200 bg-slate-50 px-3 text-sm outline-none focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100 dark:border-slate-700 dark:bg-slate-950 dark:focus:ring-emerald-900/40"
-                  placeholder="vivek@example.com"
-                  type="email"
+                  className="mt-2 h-11 w-full rounded-md border border-slate-200 bg-slate-50 px-3 text-sm outline-none focus:border-orange-500 focus:bg-white focus:ring-2 focus:ring-orange-100 dark:border-slate-700 dark:bg-slate-950 dark:focus:ring-orange-900/40"
+                  placeholder="abc@example.com" name="email"
+                  type="email" onChange={handleChange} value={formData.email}
                 />
               </label>
               <label className="block">
                 <span className="text-sm font-medium">Password</span>
                 <input
-                  className="mt-2 h-11 w-full rounded-md border border-slate-200 bg-slate-50 px-3 text-sm outline-none focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100 dark:border-slate-700 dark:bg-slate-950 dark:focus:ring-emerald-900/40"
+                  className="mt-2 h-11 w-full rounded-md border border-slate-200 bg-slate-50 px-3 text-sm outline-none focus:border-orange-500 focus:bg-white focus:ring-2 focus:ring-orange-100 dark:border-slate-700 dark:bg-slate-950 dark:focus:ring-orange-900/40"
                   placeholder="At least 8 characters"
-                  type="password"
+                  type="password" onChange={handleChange} value={formData.password} name="password"
                 />
               </label>
-              <Link
-                className="block rounded-md bg-emerald-600 px-4 py-3 text-center text-sm font-semibold text-white hover:bg-emerald-700"
-                href="/dashboard"
+              <button
+                className="block rounded-md bg-orange-600 px-4 py-3 text-center text-sm font-semibold text-white hover:bg-orange-700"
+                type="submit"
               >
+
                 Create account
-              </Link>
+              </button>
             </form>
             <p className="mt-5 text-center text-sm text-slate-500 dark:text-slate-400">
               Already have an account?{" "}
-              <Link className="font-semibold text-emerald-700 dark:text-emerald-400" href="/login">
+              {/* <Link className="font-semibold text-orange-700 dark:text-orange-400" href="/login">
                 Login
-              </Link>
+              </Link> */}
+              <button type="submit" onSubmit={handleSubmit} className="font-semibold text-orange-700 dark:text-orange-400">
+                Login
+              </button>
             </p>
           </section>
         </div>

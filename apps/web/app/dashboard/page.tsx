@@ -1,120 +1,33 @@
 import Link from "next/link";
-import { AppShell, Badge, SectionTitle, StatCard } from "../components/app-shell";
-import { findings, pullRequests, repositories } from "../components/data";
+import { AppShell, Badge, Icon, SectionTitle, StatCard } from "../components/app-shell";
+import { findings, pullRequests } from "../components/data";
 
-export default function Home() {
-  return (
-    <AppShell>
-      <div className="space-y-6">
-        <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-          <SectionTitle
-            title="Review overview"
-            description="Monitor AI review runs, risk, posted comments, and the repo context your reviewer is using."
-          />
-          <Link
-            className="w-fit rounded-md bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
-            href="/repositories/vivek/peek-er/pulls/42"
-          >
-            Open latest review
-          </Link>
-        </div>
+export default function Dashboard() {
+  return <AppShell><div className="space-y-6">
+    <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"><SectionTitle title="Good morning, Vivek" description="Here’s what your AI reviewer has been working on." /><div className="flex gap-2"><button className="rounded-lg border border-[#dfe3e9] bg-white px-3.5 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900">Review settings</button><Link href="/repositories/vivek/peek-er/pulls/42" className="rounded-lg bg-[#ff5a1f] px-3.5 py-2 text-xs font-semibold text-white hover:bg-[#ea4b12]">Open latest review</Link></div></div>
 
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <StatCard label="Active repos" value="3" detail="2 reviewed today" />
-          <StatCard label="Open PRs" value="13" detail="5 need attention" />
-          <StatCard label="Findings" value="58" detail="9 high confidence" />
-          <StatCard label="Context indexed" value="84%" detail="1,247 symbols" />
-        </div>
+    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <StatCard label="Pull requests reviewed" value="128" detail="Across 3 repositories" trend="↑ 12%" icon={<Icon name="review" />} />
+      <StatCard label="Issues found" value="47" detail="9 high-priority findings" trend="↑ 8%" icon={<Icon name="finding" />} />
+      <StatCard label="Review time saved" value="31.4h" detail="This month" trend="↑ 18%" icon={<Icon name="spark" />} />
+      <StatCard label="Acceptance rate" value="84%" detail="Of suggested changes" trend="↑ 3%" icon={<span className="text-sm font-bold">✓</span>} />
+    </div>
 
-        <div className="grid gap-6 xl:grid-cols-[1.4fr_0.9fr]">
-          <section className="rounded-md border border-slate-200 bg-white">
-            <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
-              <h2 className="text-sm font-semibold">Pull request queue</h2>
-              <Link className="text-sm font-medium text-emerald-700" href="/repositories/vivek/peek-er">
-                View repo
-              </Link>
-            </div>
-            <div className="divide-y divide-slate-100">
-              {pullRequests.map((pr) => (
-                <Link
-                  className="block p-4 hover:bg-slate-50"
-                  href={`/repositories/vivek/peek-er/pulls/${pr.number}`}
-                  key={pr.number}
-                >
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                    <div>
-                      <p className="text-sm font-semibold">
-                        #{pr.number} {pr.title}
-                      </p>
-                      <p className="mt-1 text-sm text-slate-500">
-                        {pr.branch} into {pr.base} by {pr.author}
-                      </p>
-                    </div>
-                    <Badge tone={pr.risk === "High" ? "red" : pr.risk === "Medium" ? "yellow" : "green"}>
-                      {pr.risk}
-                    </Badge>
-                  </div>
-                  <p className="mt-3 text-sm leading-6 text-slate-600">
-                    {pr.summary}
-                  </p>
-                </Link>
-              ))}
-            </div>
-          </section>
+    <div className="grid gap-5 xl:grid-cols-[minmax(0,1.55fr)_minmax(300px,.75fr)]">
+      <section className="overflow-hidden rounded-xl border border-[#e4e7ec] bg-white dark:border-slate-800 dark:bg-[#101621]">
+        <div className="flex items-center justify-between border-b border-[#edf0f3] px-5 py-4 dark:border-slate-800"><div><h2 className="text-sm font-semibold">Recent pull requests</h2><p className="mt-0.5 text-[11px] text-slate-400">Latest activity across connected repositories</p></div><Link href="/repositories" className="flex items-center gap-1 text-[11px] font-semibold text-orange-600">View all <Icon name="chevron" className="h-3 w-3" /></Link></div>
+        <div className="divide-y divide-[#f0f2f5] dark:divide-slate-800">{pullRequests.map((pr, i) => <Link key={pr.number} href={`/repositories/vivek/peek-er/pulls/${pr.number}`} className="group grid gap-3 px-5 py-4 transition hover:bg-[#fafaff] dark:hover:bg-slate-900/50 sm:grid-cols-[1fr_auto]">
+          <div className="min-w-0"><div className="flex items-center gap-2"><span className={`h-2 w-2 rounded-full ${i === 1 ? "animate-pulse bg-orange-500" : i === 2 ? "bg-slate-300" : "bg-emerald-500"}`} /><p className="truncate text-[13px] font-semibold group-hover:text-orange-700">{pr.title}</p><span className="text-[11px] text-slate-400">#{pr.number}</span></div><div className="mt-2 flex flex-wrap items-center gap-2 text-[10px] text-slate-400"><span className="font-medium text-slate-500">vivek/peek-er</span><span>•</span><span>{pr.author}</span><span>•</span><span>{pr.files} files changed</span><span>•</span><span>{i === 0 ? "8 min ago" : i === 1 ? "24 min ago" : "1 hr ago"}</span></div></div>
+          <div className="flex items-center gap-2 sm:justify-end"><Badge tone={pr.status === "Running" ? "orange" : pr.status === "Queued" ? "slate" : "green"}>{pr.status === "Running" && <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-orange-500" />}{pr.status}</Badge><Badge tone={pr.risk === "High" ? "red" : pr.risk === "Medium" ? "yellow" : "green"}>{pr.risk} risk</Badge><Icon name="chevron" className="ml-1 h-3.5 w-3.5 text-slate-300" /></div>
+        </Link>)}</div>
+      </section>
 
-          <section className="rounded-md border border-slate-200 bg-white">
-            <div className="border-b border-slate-200 px-4 py-3">
-              <h2 className="text-sm font-semibold">Highest priority findings</h2>
-            </div>
-            <div className="divide-y divide-slate-100">
-              {findings.slice(0, 3).map((finding) => (
-                <div className="p-4" key={finding.title}>
-                  <div className="flex items-center justify-between gap-3">
-                    <Badge tone={finding.severity === "High" ? "red" : "yellow"}>
-                      {finding.severity}
-                    </Badge>
-                    <span className="text-xs text-slate-500">
-                      line {finding.line}
-                    </span>
-                  </div>
-                  <p className="mt-3 text-sm font-semibold">{finding.title}</p>
-                  <p className="mt-1 truncate text-xs text-slate-500">
-                    {finding.file}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </section>
-        </div>
+      <section className="rounded-xl border border-[#e4e7ec] bg-white dark:border-slate-800 dark:bg-[#101621]"><div className="flex items-center justify-between border-b border-[#edf0f3] px-5 py-4 dark:border-slate-800"><div><h2 className="text-sm font-semibold">Needs attention</h2><p className="mt-0.5 text-[11px] text-slate-400">Highest-priority findings</p></div><span className="rounded-full bg-rose-50 px-2 py-0.5 text-[10px] font-bold text-rose-600">{findings.length}</span></div><div className="space-y-1 p-2">{findings.slice(0,3).map((f, i) => <Link href="/findings" key={f.title} className="block rounded-lg p-3 hover:bg-slate-50 dark:hover:bg-slate-900"><div className="flex items-start gap-3"><span className={`mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-lg ${i === 0 ? "bg-rose-50 text-rose-600" : "bg-amber-50 text-amber-600"}`}>!</span><div className="min-w-0"><p className="text-[12px] font-semibold leading-5">{f.title}</p><p className="mt-1 truncate font-mono text-[9px] text-slate-400">{f.file}:{f.line}</p><div className="mt-2 flex items-center gap-1.5"><Badge tone={i === 0 ? "red" : "yellow"}>{f.severity}</Badge><span className="text-[9px] text-slate-400">PR #42</span></div></div></div></Link>)}</div></section>
+    </div>
 
-        <section className="grid gap-4 md:grid-cols-3">
-          {repositories.map((repo) => (
-            <Link
-              className="rounded-md border border-slate-200 bg-white p-4 hover:border-emerald-300 hover:bg-emerald-50/30"
-              href={`/repositories/${repo.owner}/${repo.name}`}
-              key={`${repo.owner}/${repo.name}`}
-            >
-              <div className="flex items-center justify-between gap-3">
-                <p className="text-sm font-semibold">
-                  {repo.owner}/{repo.name}
-                </p>
-                <Badge tone={repo.risk === "High" ? "red" : repo.risk === "Medium" ? "yellow" : "green"}>
-                  {repo.risk}
-                </Badge>
-              </div>
-              <p className="mt-3 text-sm text-slate-500">
-                {repo.openPulls} open PRs, {repo.findings} findings
-              </p>
-              <div className="mt-4 h-2 rounded bg-slate-100">
-                <div
-                  className="h-2 rounded bg-emerald-500"
-                  style={{ width: `${repo.health}%` }}
-                />
-              </div>
-            </Link>
-          ))}
-        </section>
-      </div>
-    </AppShell>
-  );
+    <div className="grid gap-5 lg:grid-cols-[1fr_1fr]">
+      <section className="rounded-xl border border-[#e4e7ec] bg-white p-5 dark:border-slate-800 dark:bg-[#101621]"><div className="flex items-start justify-between"><div><h2 className="text-sm font-semibold">Review activity</h2><p className="mt-1 text-[11px] text-slate-400">Reviews completed over the last 7 days</p></div><button className="rounded-md border border-slate-200 px-2 py-1 text-[10px] text-slate-500 dark:border-slate-700">Last 7 days⌄</button></div><div className="mt-6 flex h-28 items-end gap-3 border-b border-slate-100 px-2 dark:border-slate-800">{[42,65,52,82,62,92,74].map((height,i)=><div key={i} className="group flex flex-1 flex-col items-center justify-end gap-2"><div className="w-full max-w-8 rounded-t bg-orange-100 transition group-hover:bg-orange-500 dark:bg-orange-500/20" style={{height}} /><span className="text-[9px] text-slate-400">{["Mon","Tue","Wed","Thu","Fri","Sat","Sun"][i]}</span></div>)}</div></section>
+      <section className="rounded-xl border border-[#e4e7ec] bg-white p-5 dark:border-slate-800 dark:bg-[#101621]"><div><h2 className="text-sm font-semibold">Reviewer health</h2><p className="mt-1 text-[11px] text-slate-400">Quality signals from the last 30 days</p></div><div className="mt-5 space-y-4">{[["Suggestion acceptance","84%","84%","bg-emerald-500"],["Review coverage","92%","92%","bg-orange-500"],["False positive rate","6%","6%","bg-amber-400"]].map(([label,val,width,color])=><div key={label}><div className="mb-1.5 flex justify-between text-[11px]"><span className="text-slate-500">{label}</span><span className="font-semibold">{val}</span></div><div className="h-1.5 rounded-full bg-slate-100 dark:bg-slate-800"><div className={`h-full rounded-full ${color}`} style={{width}} /></div></div>)}</div></section>
+    </div>
+  </div></AppShell>;
 }

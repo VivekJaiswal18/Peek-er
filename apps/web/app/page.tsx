@@ -1,210 +1,27 @@
 import Link from "next/link";
-import { ThemeToggle } from "./components/theme-toggle";
+import { Icon } from "./components/app-shell";
 
-const features = [
-  {
-    title: "PR reviews that understand your repo",
-    body: "Peek-er retrieves symbols, repo maps, code chunks, tests, and past findings before it writes a comment.",
-  },
-  {
-    title: "High-signal findings",
-    body: "Security, reliability, testing, and maintainability issues are ranked by severity and confidence.",
-  },
-  {
-    title: "Ask questions about code",
-    body: "Use repo chat to ask where behavior lives, what changed in a PR, and which files are affected.",
-  },
-  {
-    title: "Review memory",
-    body: "Store project conventions, ignored false positives, and team rules so future reviews get sharper.",
-  },
-];
-
-const reviewRows = [
-  ["apps/backend/src/auth/routes.ts", "High", "Refresh token reuse"],
-  ["apps/backend/src/auth/cookies.ts", "Medium", "Cookie policy"],
-  ["packages/db/prisma/schema.prisma", "Low", "Session model"],
+const reviewItems = [
+  { tone: "rose", label: "Security", title: "Refresh token reuse is not detected", file: "auth/routes.ts · L88" },
+  { tone: "orange", label: "Reliability", title: "Cookie policy breaks cross-site deployment", file: "auth/cookies.ts · L9" },
+  { tone: "emerald", label: "Verified", title: "Access token boundary is correctly isolated", file: "auth/middleware.ts · L15" },
 ];
 
 export default function LandingPage() {
-  return (
-    <main className="min-h-screen bg-[#f7f8fa] text-slate-950 dark:bg-slate-950 dark:text-slate-50">
-      <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/90 backdrop-blur dark:border-slate-800 dark:bg-slate-950/90">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
-          <Link className="flex items-center gap-3" href="/">
-            <span className="grid h-9 w-9 place-items-center rounded-md bg-emerald-600 text-sm font-semibold text-white">
-              P
-            </span>
-            <span>
-              <span className="block text-sm font-semibold">Peek-er</span>
-              <span className="block text-xs text-slate-500 dark:text-slate-400">
-                Agentic code review
-              </span>
-            </span>
-          </Link>
+  return <main className="min-h-screen overflow-hidden bg-[#08080a] text-white">
+    <div className="border-b border-white/[.08] bg-[#0d0d0f] px-4 py-2.5 text-center text-[11px] text-slate-300"><span className="mr-2 text-orange-500">✦</span>Peek-er 2.0 is here — faster, sharper, and built for agentic teams. <Link href="/signup" className="ml-2 font-semibold text-[#ff5a1f]">Explore what’s new →</Link></div>
+    <header className="relative z-30 border-b border-white/[.07] bg-[#08080a]/90 backdrop-blur-xl"><div className="mx-auto flex h-[72px] max-w-[1600px] items-center px-5 sm:px-8 lg:px-12"><Link href="/" className="flex items-center gap-3"><span className="grid h-9 w-9 place-items-center rounded-full bg-[#ff5a1f]"><Icon name="spark" className="h-5 w-5" /></span><span className="text-[18px] font-bold tracking-[-.04em]">Peek-er</span></Link><nav className="mx-auto hidden items-center gap-8 text-[12px] font-medium text-slate-300 lg:flex"><a href="#product" className="hover:text-white">Product</a><a href="#features" className="hover:text-white">How it works</a><a href="#agents" className="hover:text-white">AI agents</a><a href="#security" className="hover:text-white">Security</a><a href="#pricing" className="hover:text-white">Pricing</a></nav><div className="ml-auto flex items-center gap-3"><Link href="/login" className="hidden text-[12px] font-medium text-slate-300 hover:text-white sm:block">Log in</Link><Link href="/signup" className="border border-[#ff5a1f] px-4 py-2.5 text-[11px] font-bold text-[#ff5a1f] transition hover:bg-[#ff5a1f] hover:text-white">Get started free</Link></div></div></header>
 
-          <nav className="hidden items-center gap-6 text-sm font-medium text-slate-600 dark:text-slate-300 md:flex">
-            <a href="#features">Features</a>
-            <a href="#workflow">Workflow</a>
-            <Link href="/dashboard">Dashboard</Link>
-          </nav>
+    <section className="relative px-5 pb-16 pt-20 sm:px-8 lg:pb-24 lg:pt-28"><div className="pointer-events-none absolute left-1/2 top-0 h-[520px] w-[900px] -translate-x-1/2 rounded-full bg-orange-600/[.07] blur-[130px]" /><div className="relative mx-auto max-w-[1500px] text-center"><div className="mx-auto mb-6 flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/[.04] px-3 py-1.5 text-[10px] text-slate-300"><span className="h-1.5 w-1.5 rounded-full bg-[#ff5a1f] shadow-[0_0_10px_#ff5a1f]" />AI code review that understands your whole repo</div><h1 className="mx-auto max-w-[1350px] text-[clamp(3.2rem,7.1vw,7.7rem)] font-normal leading-[.94] tracking-[-.065em]">Cut review time.<br/><span className="text-[#ff5a1f]">Ship better code.</span></h1><div className="mx-auto mt-9 flex max-w-3xl flex-col items-center justify-center gap-6 md:flex-row"><p className="max-w-lg text-[clamp(1rem,1.5vw,1.35rem)] font-normal leading-7 text-slate-300">An agentic reviewer that reads beyond the diff, finds real bugs, and learns how your team builds.</p><div className="shrink-0"><Link href="/signup" className="group inline-flex h-14 items-center gap-7 border-2 border-white bg-white px-6 text-[14px] font-bold text-black transition hover:border-[#ff5a1f] hover:bg-[#ff5a1f] hover:text-white">Try it for free <span className="text-xl text-[#ff5a1f] group-hover:text-white">⠕</span></Link><p className="mt-2.5 text-[10px] text-slate-400">2-click install · GitHub App · No card required</p></div></div></div></section>
 
-          <div className="flex items-center gap-2">
-            <ThemeToggle />
-            <Link
-              className="hidden rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800 sm:inline-flex"
-              href="/login"
-            >
-              Login
-            </Link>
-            <Link
-              className="rounded-md bg-slate-950 px-3 py-2 text-sm font-semibold text-white hover:bg-slate-800 dark:bg-emerald-500 dark:text-slate-950 dark:hover:bg-emerald-400"
-              href="/signup"
-            >
-              Sign up
-            </Link>
-          </div>
-        </div>
-      </header>
+    <section id="product" className="relative mx-auto max-w-[1600px] px-3 sm:px-7"><div className="absolute inset-x-20 top-1/3 h-60 bg-orange-500/10 blur-[130px]" /><div className="relative overflow-hidden rounded-t-[22px] border border-white/[.11] bg-[#101014] shadow-[0_-20px_100px_rgba(255,90,31,.07)]"><div className="flex h-11 items-center border-b border-white/[.08] px-4"><div className="flex gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-[#ff5a1f]"/><span className="h-2.5 w-2.5 rounded-full bg-white/15"/><span className="h-2.5 w-2.5 rounded-full bg-white/15"/></div><div className="mx-auto rounded-md border border-white/[.08] bg-white/[.03] px-20 py-1 text-[9px] text-slate-500">app.peek-er.dev/review/482</div></div><div className="grid min-h-[430px] lg:grid-cols-[210px_minmax(0,1fr)_300px]"><aside className="hidden border-r border-white/[.08] p-3 lg:block"><div className="grid grid-cols-2 rounded-lg border border-white/10 bg-white/[.03] p-1 text-center text-[10px]"><span className="rounded bg-white/10 py-2 font-semibold">▱ Layers</span><span className="py-2 text-slate-500">⌕ Files</span></div><div className="mt-5 space-y-1">{[["✦","Overview","3 blockers"],["◫","Blast radius","12 files"],["◉","Architecture","2 services"],["✓","Checks","18 passed"]].map((n,i)=><div key={n[1]} className={`rounded-lg px-3 py-2.5 ${i===0?"bg-[#ff5a1f]/10":""}`}><div className="flex items-center gap-2 text-[11px] font-semibold"><span className={i===0?"text-[#ff5a1f]":"text-slate-500"}>{n[0]}</span>{n[1]}</div><p className="ml-5 mt-1 text-[9px] text-slate-500">{n[2]}</p></div>)}</div></aside><div className="min-w-0"><div className="flex items-center gap-3 border-b border-white/[.08] px-5 py-4"><span className="rounded-full bg-emerald-500 px-2 py-1 text-[9px] font-bold text-black">● Open</span><div><p className="text-[12px] font-semibold">Add secure session rotation with device tracking</p><p className="mt-1 text-[9px] text-slate-500">peek-er/web-app #482 · 9 files</p></div><button className="ml-auto rounded-md border border-white/10 px-3 py-2 text-[9px]">Submit review⌄</button></div><div className="p-5"><div className="border-b border-white/[.08] pb-4"><div className="flex items-center gap-2"><span className="grid h-7 w-7 place-items-center rounded-full bg-[#ff5a1f]"><Icon name="spark" className="h-3.5 w-3.5" /></span><p className="text-[11px] font-bold">Peek-er review summary</p><span className="rounded-full bg-rose-500/10 px-2 py-1 text-[8px] text-rose-400">High risk</span></div><p className="mt-3 max-w-3xl text-[10px] leading-5 text-slate-400">The authentication flow is well structured, but session rotation currently permits token replay. One blocker should be addressed before merge.</p></div><div className="mt-4 space-y-3">{reviewItems.map((item,i)=><div key={item.title} className="rounded-lg border border-white/[.08] bg-white/[.025] p-3.5"><div className="flex items-center gap-2"><span className={`h-2 w-2 rounded-full ${i===0?"bg-rose-500":i===1?"bg-orange-500":"bg-emerald-500"}`} /><span className="text-[8px] font-bold uppercase tracking-wider text-slate-500">{item.label}</span><span className="ml-auto font-mono text-[8px] text-slate-600">{item.file}</span></div><p className="mt-2 text-[10px] font-semibold">{item.title}</p></div>)}</div></div></div><aside className="hidden border-l border-white/[.08] p-3 lg:block"><div className="flex rounded-lg border border-white/10 p-1 text-[9px]"><span className="flex-1 rounded bg-white/10 py-2 text-center font-semibold">✦ Findings 3</span><span className="flex-1 py-2 text-center text-slate-500">Comments</span></div><div className="mt-3 rounded-lg border border-orange-500/20 bg-orange-500/[.06] p-3"><p className="text-[9px] font-bold text-orange-400">3 / 3 analyzed</p><div className="mt-3 h-1 rounded bg-white/10"><div className="h-full w-full rounded bg-[#ff5a1f]" /></div></div><p className="mt-4 text-[9px] font-semibold">Agent activity</p><div className="mt-3 space-y-4">{["Mapped repository context","Traced auth call graph","Checked security patterns","Generated actionable patch"].map((x,i)=><div key={x} className="flex gap-2"><span className={`mt-0.5 h-2 w-2 rounded-full ${i===3?"bg-[#ff5a1f]":"bg-emerald-500"}`} /><div><p className="text-[9px]">{x}</p><p className="mt-1 text-[8px] text-slate-600">{98-i*4}% confidence</p></div></div>)}</div></aside></div></div></section>
 
-      <section className="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:px-8 lg:py-20">
-        <div className="flex flex-col justify-center">
-          <p className="text-sm font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-400">
-            AI code reviews for serious PRs
-          </p>
-          <h1 className="mt-4 max-w-3xl text-4xl font-semibold tracking-normal text-slate-950 dark:text-white sm:text-5xl lg:text-6xl">
-            Peek-er
-          </h1>
-          <p className="mt-5 max-w-2xl text-lg leading-8 text-slate-600 dark:text-slate-300">
-            A CodeRabbit-style reviewer that indexes your repo, understands
-            pull request context, posts useful comments, and lets your team ask
-            questions about the codebase.
-          </p>
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <Link
-              className="rounded-md bg-emerald-600 px-5 py-3 text-center text-sm font-semibold text-white hover:bg-emerald-700"
-              href="/signup"
-            >
-              Start reviewing
-            </Link>
-            <Link
-              className="rounded-md border border-slate-200 bg-white px-5 py-3 text-center text-sm font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800"
-              href="/login"
-            >
-              Login
-            </Link>
-          </div>
-        </div>
+    <section className="border-y border-white/[.08] bg-[#0b0b0d] py-7"><p className="mb-5 text-center text-[9px] font-bold uppercase tracking-[.24em] text-slate-600">Trusted by engineers shipping at speed</p><div className="flex flex-wrap items-center justify-center gap-x-14 gap-y-5 text-[14px] font-bold text-slate-400 sm:text-lg"><span>northstar</span><span>ACME / DEV</span><span className="font-mono">railway</span><span>Linear</span><span className="font-serif italic">Layer</span><span>QUANTUM</span></div></section>
 
-        <div className="rounded-md border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-          <div className="border-b border-slate-200 px-4 py-3 dark:border-slate-800">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="text-sm font-semibold">PR #42 review</p>
-                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                  auth-refresh-token into main
-                </p>
-              </div>
-              <span className="rounded border border-rose-200 bg-rose-50 px-2 py-1 text-xs font-medium text-rose-700">
-                High risk
-              </span>
-            </div>
-          </div>
-          <div className="grid gap-0 lg:grid-cols-[1fr_0.85fr]">
-            <div className="divide-y divide-slate-100 dark:divide-slate-800">
-              {reviewRows.map(([file, risk, title]) => (
-                <div className="p-4" key={file}>
-                  <div className="flex items-center justify-between gap-3">
-                    <p className="truncate text-sm font-medium">{file}</p>
-                    <span className="text-xs text-slate-500 dark:text-slate-400">
-                      {risk}
-                    </span>
-                  </div>
-                  <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
-                    {title}
-                  </p>
-                </div>
-              ))}
-            </div>
-            <div className="border-t border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950 lg:border-l lg:border-t-0">
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-                Retrieved context
-              </p>
-              <div className="mt-3 space-y-3">
-                {[
-                  "Symbol: requireAuth",
-                  "Repo map: Express + Prisma",
-                  "Memory: httpOnly refresh cookie",
-                  "Edge: routes -> token helpers",
-                ].map((item) => (
-                  <div
-                    className="rounded-md border border-slate-200 bg-white p-3 text-sm text-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300"
-                    key={item}
-                  >
-                    {item}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+    <section id="features" className="mx-auto max-w-[1400px] px-5 py-24 sm:px-8 lg:py-32"><div className="grid gap-12 lg:grid-cols-[.8fr_1.2fr]"><div><p className="text-[10px] font-bold uppercase tracking-[.2em] text-[#ff5a1f]">Built differently</p><h2 className="mt-5 text-[clamp(2.5rem,5vw,5.2rem)] font-normal leading-[.98] tracking-[-.055em]">A reviewer that actually understands the assignment.</h2><p className="mt-7 max-w-md text-sm leading-7 text-slate-400">Peek-er combines specialized agents with your repository’s architecture, history, and team conventions. Less noise. More bugs caught.</p></div><div className="grid gap-px overflow-hidden rounded-xl border border-white/[.08] bg-white/[.08] sm:grid-cols-2">{[["01","Repo-wide context","Understands symbols, dependencies, tests, and architecture beyond the changed lines."],["02","Agentic analysis","Security, reliability, and test agents collaborate before a finding reaches you."],["03","Learns your team","Remembers conventions, dismissed findings, and the patterns your team prefers."],["04","Actionable by default","Every finding includes evidence, affected code, and a patch you can apply."]].map(f=><article key={f[0]} className="bg-[#0d0d10] p-7 transition hover:bg-[#121215]"><span className="font-mono text-[9px] text-[#ff5a1f]">{f[0]}</span><h3 className="mt-10 text-lg font-semibold tracking-tight">{f[1]}</h3><p className="mt-3 text-[12px] leading-6 text-slate-500">{f[2]}</p><span className="mt-8 block text-[#ff5a1f]">↗</span></article>)}</div></div></section>
 
-      <section
-        className="border-y border-slate-200 bg-white py-12 dark:border-slate-800 dark:bg-slate-900"
-        id="features"
-      >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="max-w-2xl">
-            <h2 className="text-2xl font-semibold tracking-normal">
-              Built for repo-aware reviews
-            </h2>
-            <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
-              The reviewer combines PR diffs with semantic repo context instead
-              of judging changed lines in isolation.
-            </p>
-          </div>
-          <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            {features.map((feature) => (
-              <article
-                className="rounded-md border border-slate-200 bg-slate-50 p-5 dark:border-slate-800 dark:bg-slate-950"
-                key={feature.title}
-              >
-                <h3 className="text-sm font-semibold">{feature.title}</h3>
-                <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
-                  {feature.body}
-                </p>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
+    <section id="agents" className="border-y border-white/[.08] bg-[#ff5a1f] px-5 py-20 text-black sm:px-8"><div className="mx-auto flex max-w-[1400px] flex-col gap-8 lg:flex-row lg:items-end lg:justify-between"><h2 className="max-w-4xl text-[clamp(2.8rem,6vw,6.5rem)] font-normal leading-[.92] tracking-[-.06em]">Your fastest reviewer.<br/>Your sharpest teammate.</h2><div className="max-w-sm"><p className="text-sm leading-6">Start reviewing in two clicks. Connect GitHub, choose your repositories, and let Peek-er handle the next pull request.</p><Link href="/signup" className="mt-6 inline-flex border-2 border-black bg-black px-6 py-3 text-[12px] font-bold text-white hover:bg-transparent hover:text-black">Start reviewing free →</Link></div></div></section>
 
-      <section className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8" id="workflow">
-        <div className="grid gap-4 md:grid-cols-4">
-          {["Connect repo", "Index context", "Review PR", "Ask questions"].map(
-            (step, index) => (
-              <div
-                className="rounded-md border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900"
-                key={step}
-              >
-                <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-400">
-                  0{index + 1}
-                </p>
-                <h3 className="mt-3 text-sm font-semibold">{step}</h3>
-                <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
-                  {[
-                    "Install the GitHub app and choose repositories.",
-                    "Store repo files, symbols, summaries, edges, and embeddings.",
-                    "Create review runs with findings and posted comments.",
-                    "Chat with the indexed repo and inspect source context.",
-                  ][index]}
-                </p>
-              </div>
-            ),
-          )}
-        </div>
-      </section>
-    </main>
-  );
+    <footer className="px-5 py-10 sm:px-8"><div className="mx-auto flex max-w-[1400px] flex-col gap-6 sm:flex-row sm:items-center sm:justify-between"><Link href="/" className="flex items-center gap-2 font-bold"><span className="grid h-7 w-7 place-items-center rounded-full bg-[#ff5a1f]"><Icon name="spark" className="h-3.5 w-3.5" /></span>Peek-er</Link><p className="text-[10px] text-slate-600">© 2026 Peek-er. Agentic code review for teams that move.</p><div className="flex gap-5 text-[10px] text-slate-500"><a>Security</a><a>Docs</a><a>Privacy</a><a>GitHub</a></div></div></footer>
+  </main>;
 }

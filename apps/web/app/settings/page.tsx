@@ -62,7 +62,7 @@ export default function SettingsPage() {
                 >
                   <span className="text-sm font-medium">{label}</span>
                   <input
-                    className="h-5 w-5 accent-emerald-600"
+                    className="h-5 w-5 accent-orange-600"
                     defaultChecked={Boolean(enabled)}
                     type="checkbox"
                   />
@@ -86,7 +86,7 @@ export default function SettingsPage() {
                     <span className="text-slate-500">{value}%</span>
                   </div>
                   <input
-                    className="w-full accent-emerald-600"
+                    className="w-full accent-orange-600"
                     defaultValue={Number(value)}
                     max="100"
                     min="0"

@@ -1,161 +1,36 @@
 import Link from "next/link";
-import { AppShell, Badge, SectionTitle, StatCard } from "../../../../../components/app-shell";
+import { AppShell, Badge, Icon } from "../../../../../components/app-shell";
 import { contextItems, findings } from "../../../../../components/data";
 
-type Props = {
-  params: Promise<{
-    owner: string;
-    repo: string;
-    number: string;
-  }>;
-};
-
-const changedFiles = [
-  {
-    path: "apps/backend/src/auth/routes.ts",
-    additions: 142,
-    deletions: 18,
-    risk: "High",
-  },
-  {
-    path: "apps/backend/src/auth/tokens.ts",
-    additions: 64,
-    deletions: 4,
-    risk: "Medium",
-  },
-  {
-    path: "packages/db/prisma/schema.prisma",
-    additions: 6,
-    deletions: 1,
-    risk: "Low",
-  },
+type Props = { params: Promise<{ owner: string; repo: string; number: string }> };
+const files = [
+  ["apps/backend/src/auth/routes.ts", "+142", "-18", "High"],
+  ["apps/backend/src/auth/tokens.ts", "+64", "-4", "Medium"],
+  ["apps/backend/src/auth/cookies.ts", "+28", "-2", "Medium"],
+  ["packages/db/prisma/schema.prisma", "+6", "-1", "Low"],
 ];
 
 export default async function PullRequestPage({ params }: Props) {
   const { owner, repo, number } = await params;
+  return <AppShell><div className="-mx-4 -my-7 sm:-mx-7 lg:-mx-8">
+    <div className="border-b border-[#e4e7ec] bg-white px-5 py-5 dark:border-slate-800 dark:bg-[#101621] lg:px-7">
+      <div className="mb-4 flex items-center gap-1.5 text-[11px] text-slate-400"><Link href="/repositories">Repositories</Link><Icon name="chevron" className="h-3 w-3" /><Link href={`/repositories/${owner}/${repo}`} className="text-slate-600 dark:text-slate-300">{owner}/{repo}</Link><Icon name="chevron" className="h-3 w-3" /><span>Pull request #{number}</span></div>
+      <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between"><div><div className="flex flex-wrap items-center gap-2"><h1 className="text-[21px] font-semibold tracking-[-.035em]">Add refresh-token auth flow</h1><span className="text-[15px] font-normal text-slate-400">#{number}</span><Badge tone="green">● Open</Badge></div><div className="mt-2 flex flex-wrap items-center gap-2 text-[11px] text-slate-500"><span className="grid h-5 w-5 place-items-center rounded-full bg-gradient-to-br from-amber-300 to-orange-500 text-[8px] font-bold text-white">VK</span><strong className="text-slate-700 dark:text-slate-300">vivek</strong><span>wants to merge</span><code className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] text-orange-700 dark:bg-slate-800">auth-refresh-token</code><span>into</span><code className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] dark:bg-slate-800">main</code><span>• updated 8 min ago</span></div></div>
+      <div className="flex gap-2"><button className="rounded-lg border border-[#dfe3e9] bg-white px-3.5 py-2 text-xs font-semibold text-slate-600 dark:border-slate-700 dark:bg-slate-900">Re-run review</button><button className="flex items-center gap-1.5 rounded-lg bg-[#ff5a1f] px-3.5 py-2 text-xs font-semibold text-white"><Icon name="spark" className="h-3.5 w-3.5" /> Post 3 comments</button></div></div>
+      <nav className="-mb-5 mt-5 flex gap-6 overflow-x-auto"><a className="border-b-2 border-orange-600 pb-3 text-xs font-semibold text-orange-700">Overview</a>{["Files changed  9","Findings  5","Agent activity","Context  12"].map(t=><a key={t} className="whitespace-nowrap pb-3 text-xs font-medium text-slate-500 hover:text-slate-900">{t}</a>)}</nav>
+    </div>
 
-  return (
-    <AppShell>
-      <div className="space-y-6">
-        <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-          <SectionTitle
-            title={`PR #${number}: Add refresh-token auth flow`}
-            description={`${owner}/${repo} review run with findings, comments, related context, and changed-file risk.`}
-          />
-          <div className="flex flex-wrap gap-2">
-            <Link
-              className="rounded-md border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
-              href={`/repositories/${owner}/${repo}`}
-            >
-              Back to repo
-            </Link>
-            <button className="rounded-md bg-slate-950 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800">
-              Post comments
-            </button>
-          </div>
-        </div>
+    <div className="grid min-h-[calc(100vh-210px)] xl:grid-cols-[235px_minmax(0,1fr)_330px]">
+      <aside className="hidden border-r border-[#e4e7ec] bg-white dark:border-slate-800 dark:bg-[#101621] xl:block"><div className="flex items-center justify-between border-b border-[#edf0f3] px-4 py-3.5 dark:border-slate-800"><h2 className="text-[11px] font-semibold">Changed files</h2><span className="text-[10px] text-slate-400">9 files</span></div><div className="p-2"><div className="mb-2 flex gap-2 px-2 text-[9px] text-slate-400"><span className="text-emerald-600">+248</span><span className="text-rose-500">−31</span></div>{files.map((f,i)=><button key={f[0]} className={`mb-1 w-full rounded-lg p-2.5 text-left ${i===0?"bg-orange-50 dark:bg-orange-500/10":"hover:bg-slate-50 dark:hover:bg-slate-900"}`}><div className="flex gap-2"><span className="mt-0.5 text-[10px] text-orange-500">TS</span><span className="min-w-0"><span className={`block truncate text-[10px] font-medium ${i===0?"text-orange-800 dark:text-orange-300":""}`}>{String(f[0]).split("/").pop()}</span><span className="block truncate text-[8px] text-slate-400">{String(f[0]).split("/").slice(0,-1).join("/")}</span></span></div><div className="mt-2 flex items-center gap-1.5 text-[8px]"><span className="text-emerald-600">{f[1]}</span><span className="text-rose-500">{f[2]}</span><span className={`ml-auto h-1.5 w-1.5 rounded-full ${f[3]==="High"?"bg-rose-500":f[3]==="Medium"?"bg-amber-400":"bg-emerald-500"}`} /></div></button>)}</div></aside>
 
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <StatCard label="Risk" value="High" detail="Security-sensitive code" />
-          <StatCard label="Findings" value="5" detail="3 suggested comments" />
-          <StatCard label="Changed files" value="9" detail="+248 / -31" />
-          <StatCard label="Context hits" value="12" detail="5 strong matches" />
-        </div>
+      <main className="min-w-0 bg-[#f8f9fb] p-4 dark:bg-[#090c13] lg:p-6">
+        <section className="overflow-hidden rounded-xl border border-orange-200 bg-white shadow-[0_1px_3px_rgba(16,24,40,.04)] dark:border-orange-500/30 dark:bg-[#101621]"><div className="flex items-center gap-3 border-b border-orange-100 bg-gradient-to-r from-orange-50 to-white px-5 py-4 dark:border-slate-800 dark:from-orange-500/10 dark:to-transparent"><span className="grid h-8 w-8 place-items-center rounded-lg bg-orange-600 text-white"><Icon name="spark" /></span><div><h2 className="text-[13px] font-semibold">Peek-er review</h2><p className="text-[10px] text-slate-400">Completed in 1m 42s · analyzed 9 files and 2,418 lines</p></div><Badge tone="red">High risk</Badge><button className="ml-auto text-slate-400">•••</button></div><div className="p-5"><p className="text-[12px] leading-6 text-slate-600 dark:text-slate-300">The access-token and refresh-token split is implemented cleanly, but this change introduces a <strong className="font-semibold text-slate-900 dark:text-white">session security risk</strong>. Refresh token reuse is not currently detected, which could allow a stolen token to remain valid after rotation.</p><div className="mt-4 grid gap-2 sm:grid-cols-3"><div className="rounded-lg border border-rose-100 bg-rose-50/60 p-3 dark:border-rose-500/20 dark:bg-rose-500/5"><p className="text-[9px] font-bold uppercase tracking-wider text-rose-500">Must fix</p><p className="mt-1 text-[11px] font-semibold">1 security issue</p></div><div className="rounded-lg border border-amber-100 bg-amber-50/60 p-3 dark:border-amber-500/20 dark:bg-amber-500/5"><p className="text-[9px] font-bold uppercase tracking-wider text-amber-500">Consider</p><p className="mt-1 text-[11px] font-semibold">2 improvements</p></div><div className="rounded-lg border border-emerald-100 bg-emerald-50/60 p-3 dark:border-emerald-500/20 dark:bg-emerald-500/5"><p className="text-[9px] font-bold uppercase tracking-wider text-emerald-500">Looks good</p><p className="mt-1 text-[11px] font-semibold">6 files verified</p></div></div></div></section>
 
-        <section className="rounded-md border border-slate-200 bg-white p-4">
-          <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-            <div>
-              <h2 className="text-sm font-semibold">AI review summary</h2>
-              <p className="mt-2 max-w-4xl text-sm leading-6 text-slate-600">
-                The implementation follows the right access-token and
-                refresh-token split. Before merge, harden refresh-token reuse,
-                align cookie settings with deployment domains, and add coverage
-                for expired access tokens.
-              </p>
-            </div>
-            <Badge tone="red">High priority</Badge>
-          </div>
-        </section>
+        <div className="mt-5 flex items-center justify-between"><h2 className="text-[12px] font-semibold">Findings <span className="ml-1 text-slate-400">{findings.length}</span></h2><div className="flex gap-1 rounded-lg border border-slate-200 bg-white p-1 dark:border-slate-700 dark:bg-slate-900"><button className="rounded bg-slate-100 px-2 py-1 text-[9px] font-semibold dark:bg-slate-800">All</button><button className="px-2 py-1 text-[9px] text-slate-400">Unresolved</button></div></div>
+        <div className="mt-3 space-y-3">{findings.map((f,i)=><article key={f.title} className="overflow-hidden rounded-xl border border-[#e4e7ec] bg-white dark:border-slate-800 dark:bg-[#101621]"><div className="flex items-start gap-3 p-4"><span className={`mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-lg text-xs font-bold ${i===0?"bg-rose-50 text-rose-600":"bg-amber-50 text-amber-600"}`}>!</span><div className="min-w-0 flex-1"><div className="flex flex-wrap items-center gap-2"><Badge tone={i===0?"red":"yellow"}>{f.severity}</Badge><Badge tone="slate">{f.category}</Badge><span className="text-[9px] text-slate-400">Confidence {i===0?"96":"88"}%</span></div><h3 className="mt-2.5 text-[12px] font-semibold">{f.title}</h3><p className="mt-1.5 text-[11px] leading-5 text-slate-500">{f.detail}</p><div className="mt-3 flex items-center gap-2 font-mono text-[9px] text-slate-400"><span>⌘</span><span className="truncate">{f.file}</span><span>Line {f.line}</span></div></div><button className="text-slate-300">•••</button></div>{i<2&&<div className="border-t border-[#edf0f3] bg-[#fbfcfd] px-4 py-3 dark:border-slate-800 dark:bg-slate-900/40"><div className="flex items-center gap-2"><span className="text-[9px] font-semibold text-orange-600">✦ Suggested fix</span><code className="ml-auto text-[8px] text-slate-400">Apply patch</code></div><pre className="mt-2 overflow-x-auto whitespace-pre-wrap font-mono text-[9px] leading-5 text-slate-600 dark:text-slate-300"><span className="text-rose-500">- await rotateRefreshToken(token)</span>{"\n"}<span className="text-emerald-600">+ await rotateAndInvalidateSession(token, fingerprint)</span></pre></div>}<div className="flex gap-2 border-t border-[#edf0f3] px-4 py-2.5 dark:border-slate-800"><button className="rounded-md bg-orange-50 px-2.5 py-1.5 text-[9px] font-semibold text-orange-700 dark:bg-orange-500/10">Add as comment</button><button className="px-2 py-1.5 text-[9px] font-medium text-slate-400">Dismiss</button><button className="ml-auto px-2 py-1.5 text-[9px] text-slate-400">Reply</button></div></article>)}</div>
+      </main>
 
-        <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
-          <section className="rounded-md border border-slate-200 bg-white">
-            <div className="border-b border-slate-200 px-4 py-3">
-              <h2 className="text-sm font-semibold">Inline findings</h2>
-            </div>
-            <div className="divide-y divide-slate-100">
-              {findings.map((finding) => (
-                <article className="p-4" key={finding.title}>
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                    <div>
-                      <p className="text-sm font-semibold">{finding.title}</p>
-                      <p className="mt-1 text-xs text-slate-500">
-                        {finding.file}:{finding.line}
-                      </p>
-                    </div>
-                    <Badge tone={finding.severity === "High" ? "red" : "yellow"}>
-                      {finding.severity}
-                    </Badge>
-                  </div>
-                  <p className="mt-3 text-sm leading-6 text-slate-600">
-                    {finding.detail}
-                  </p>
-                  <div className="mt-3 rounded-md border border-slate-200 bg-slate-50 p-3 font-mono text-xs leading-6 text-slate-700">
-                    Suggested: rotate refresh tokens, store only token hashes,
-                    and reject reuse with session invalidation.
-                  </div>
-                </article>
-              ))}
-            </div>
-          </section>
-
-          <aside className="space-y-6">
-            <section className="rounded-md border border-slate-200 bg-white">
-              <div className="border-b border-slate-200 px-4 py-3">
-                <h2 className="text-sm font-semibold">Changed files</h2>
-              </div>
-              <div className="divide-y divide-slate-100">
-                {changedFiles.map((file) => (
-                  <div className="p-4" key={file.path}>
-                    <div className="flex items-center justify-between gap-3">
-                      <p className="truncate text-sm font-medium">{file.path}</p>
-                      <Badge
-                        tone={
-                          file.risk === "High"
-                            ? "red"
-                            : file.risk === "Medium"
-                              ? "yellow"
-                              : "green"
-                        }
-                      >
-                        {file.risk}
-                      </Badge>
-                    </div>
-                    <p className="mt-2 text-xs text-slate-500">
-                      +{file.additions} / -{file.deletions}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </section>
-
-            <section className="rounded-md border border-slate-200 bg-white">
-              <div className="border-b border-slate-200 px-4 py-3">
-                <h2 className="text-sm font-semibold">RAG context</h2>
-              </div>
-              <div className="space-y-3 p-4">
-                {contextItems.map((item) => (
-                  <div
-                    className="rounded-md border border-slate-200 bg-slate-50 p-3 text-sm leading-6 text-slate-700"
-                    key={item}
-                  >
-                    {item}
-                  </div>
-                ))}
-              </div>
-            </section>
-          </aside>
-        </div>
-      </div>
-    </AppShell>
-  );
+      <aside className="hidden border-l border-[#e4e7ec] bg-white dark:border-slate-800 dark:bg-[#101621] xl:block"><div className="border-b border-[#edf0f3] px-5 py-4 dark:border-slate-800"><h2 className="text-[12px] font-semibold">Agent activity</h2><p className="mt-1 text-[10px] text-slate-400">How Peek-er reached its conclusions</p></div><div className="p-5"><div className="space-y-0">{[["Fetched pull request diff","9 files · 2,418 lines"],["Mapped repository context","1,247 symbols indexed"],["Ran security analysis","Auth patterns + OWASP checks"],["Validated against codebase","12 context matches"],["Generated review","5 findings · 3 comments"]].map((a,i)=><div key={a[0]} className="relative flex gap-3 pb-5 before:absolute before:left-[7px] before:top-4 before:h-full before:w-px before:bg-slate-200 last:before:hidden dark:before:bg-slate-700"><span className={`relative z-10 mt-0.5 h-4 w-4 shrink-0 rounded-full border-4 border-white ${i===4?"bg-orange-500":"bg-emerald-500"} dark:border-[#101621]`} /><div><p className="text-[10px] font-semibold">{a[0]}</p><p className="mt-1 text-[9px] text-slate-400">{a[1]}</p></div></div>)}</div><div className="mt-2 border-t border-slate-100 pt-5 dark:border-slate-800"><div className="flex items-center justify-between"><h3 className="text-[11px] font-semibold">Context used</h3><Badge tone="orange">12 hits</Badge></div><div className="mt-3 space-y-2">{contextItems.slice(0,4).map((item,i)=><div key={item} className="rounded-lg border border-slate-100 bg-slate-50 p-2.5 dark:border-slate-800 dark:bg-slate-900"><div className="flex items-center gap-1.5"><span className="text-[9px] text-orange-500">{i===0?"◫":"⌘"}</span><span className="text-[9px] font-semibold">{i===0?"Repository map":"Related symbol"}</span><span className="ml-auto text-[8px] text-emerald-600">{98-i*3}%</span></div><p className="mt-1 line-clamp-2 text-[8px] leading-4 text-slate-400">{item}</p></div>)}</div></div></div></aside>
+    </div>
+  </div></AppShell>;
 }

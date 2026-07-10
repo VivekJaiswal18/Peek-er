@@ -1,6 +1,7 @@
 {
   "$schema": "https://turborepo.dev/schema.json",
   "ui": "tui",
+  "globalEnv": ["GITHUB_APP_INSTALL_URL", "GITHUB_APP_SLUG"],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],

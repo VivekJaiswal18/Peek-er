@@ -71,10 +71,10 @@ export default async function RepoChatPage({ params }: Props) {
             <form className="border-t border-slate-200 p-4">
               <div className="flex flex-col gap-3 sm:flex-row">
                 <input
-                  className="h-11 flex-1 rounded-md border border-slate-200 bg-slate-50 px-3 text-sm outline-none focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+                  className="h-11 flex-1 rounded-md border border-slate-200 bg-slate-50 px-3 text-sm outline-none focus:border-orange-500 focus:bg-white focus:ring-2 focus:ring-orange-100"
                   placeholder="Ask about architecture, files, tests, or a finding"
                 />
-                <button className="rounded-md bg-emerald-600 px-5 py-2 text-sm font-semibold text-white hover:bg-emerald-700">
+                <button className="rounded-md bg-orange-600 px-5 py-2 text-sm font-semibold text-white hover:bg-orange-700">
                   Send
                 </button>
               </div>
@@ -110,7 +110,7 @@ export default async function RepoChatPage({ params }: Props) {
                       </div>
                       <div className="h-2 rounded bg-slate-100">
                         <div
-                          className="h-2 rounded bg-emerald-500"
+                          className="h-2 rounded bg-orange-500"
                           style={{ width: `${[98, 94, 86, 82][index]}%` }}
                         />
                       </div>
