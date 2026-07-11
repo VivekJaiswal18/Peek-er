@@ -4,25 +4,31 @@ import { ThemeToggle } from "../components/theme-toggle";
 import React, {useState} from "react"
 import {useRouter} from "next/navigation"
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
+
 export default function SignupPage() {
-  const router = useRouter()
+  const router = useRouter();
+  const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     username: "",
     email: "",
-    password: ""
-  })
+    password: "",
+  });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>)=>{
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
-    })
-  }
-  const handleSubmit = async (e: React.FormEvent)=>{
-    e.preventDefault()
-    try{
-    const response = await fetch("http://localhost:8080/signup",
-      {
+      [e.target.name]: e.target.value,
+    });
+  };
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch(`${API_URL}/signup`, {
         method: "POST",
         credentials: "include",
         headers: {
@@ -30,13 +36,23 @@ export default function SignupPage() {
         },
         body: JSON.stringify(formData)
       })
-      console.log(response)
-      router.replace("/dashboard")
+      const data = (await response.json()) as { message?: string };
+
+      if (!response.ok) {
+        throw new Error(data.message ?? "Could not create your account");
+      }
+
+      router.replace("/dashboard");
+    } catch (caughtError) {
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : "Could not create your account",
+      );
+    } finally {
+      setIsSubmitting(false);
     }
-    catch(error){
-      console.log("getting error:", error)
-    }
-  }
+  };
   return (
     <main className="min-h-screen bg-[#f7f7f8] text-slate-950 dark:bg-slate-950 dark:text-slate-50">
       <div className="mx-auto flex min-h-screen max-w-7xl flex-col px-4 py-6 sm:px-6 lg:px-8">
@@ -83,17 +99,24 @@ export default function SignupPage() {
             <form onSubmit={handleSubmit} className="mt-6 space-y-4">
               <label className="block">
                 <span className="text-sm font-medium">Name</span>
-                <input type="name" value={formData.username} onChange={handleChange}
+                <input
+                  type="name"
+                  value={formData.username}
+                  onChange={handleChange}
                   className="mt-2 h-11 w-full rounded-md border border-slate-200 bg-slate-50 px-3 text-sm outline-none focus:border-orange-500 focus:bg-white focus:ring-2 focus:ring-orange-100 dark:border-slate-700 dark:bg-slate-950 dark:focus:ring-orange-900/40"
-                  placeholder="name" name="username"
+                  placeholder="name"
+                  name="username"
                 />
               </label>
               <label className="block">
                 <span className="text-sm font-medium">Email</span>
                 <input
                   className="mt-2 h-11 w-full rounded-md border border-slate-200 bg-slate-50 px-3 text-sm outline-none focus:border-orange-500 focus:bg-white focus:ring-2 focus:ring-orange-100 dark:border-slate-700 dark:bg-slate-950 dark:focus:ring-orange-900/40"
-                  placeholder="abc@example.com" name="email"
-                  type="email" onChange={handleChange} value={formData.email}
+                  placeholder="abc@example.com"
+                  name="email"
+                  type="email"
+                  onChange={handleChange}
+                  value={formData.email}
                 />
               </label>
               <label className="block">
@@ -101,25 +124,33 @@ export default function SignupPage() {
                 <input
                   className="mt-2 h-11 w-full rounded-md border border-slate-200 bg-slate-50 px-3 text-sm outline-none focus:border-orange-500 focus:bg-white focus:ring-2 focus:ring-orange-100 dark:border-slate-700 dark:bg-slate-950 dark:focus:ring-orange-900/40"
                   placeholder="At least 8 characters"
-                  type="password" onChange={handleChange} value={formData.password} name="password"
+                  type="password"
+                  onChange={handleChange}
+                  value={formData.password}
+                  name="password"
                 />
               </label>
+              {error && (
+                <p className="rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+                  {error}
+                </p>
+              )}
               <button
-                className="block rounded-md bg-orange-600 px-4 py-3 text-center text-sm font-semibold text-white hover:bg-orange-700"
+                className="block w-full rounded-md bg-orange-600 px-4 py-3 text-center text-sm font-semibold text-white hover:bg-orange-700 disabled:cursor-not-allowed disabled:opacity-60"
+                disabled={isSubmitting}
                 type="submit"
               >
-
-                Create account
+                {isSubmitting ? "Creating account..." : "Create account"}
               </button>
             </form>
             <p className="mt-5 text-center text-sm text-slate-500 dark:text-slate-400">
               Already have an account?{" "}
-              {/* <Link className="font-semibold text-orange-700 dark:text-orange-400" href="/login">
+              <Link
+                className="font-semibold text-orange-700 dark:text-orange-400"
+                href="/login"
+              >
                 Login
-              </Link> */}
-              <button type="submit" onSubmit={handleSubmit} className="font-semibold text-orange-700 dark:text-orange-400">
-                Login
-              </button>
+              </Link>
             </p>
           </section>
         </div>

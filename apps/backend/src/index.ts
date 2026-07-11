@@ -4,18 +4,36 @@ import cors from "cors"
 import bcrypt from "bcrypt"
 import {generateAccessToken, generateRefreshToken} from "./utils/tokens"
 import cookieParser from "cookie-parser";
-import {authenticate} from "./middlewares/auth.middleware"
-import {ingestProducer, reviewProducer, RepoIngestRequestPayload, PrReviewRequestPayload} from "@repo/kafka"
-import {prisma} from "@repo/db"
-import {v4} from "uuid"
+import { z } from "zod";
+import { prisma } from "@repo/db";
+import { authenticate } from "./middlewares/auth.middleware";
+import {
+  connectGithubInstallation,
+  recordGithubInstallation,
+  verifyGithubWebhookSignature,
+  type GitHubInstallation,
+} from "./services/github.service";
 
-const app = express()
-app.use(cookieParser())
-app.use(cors({
-   origin: "http://localhost:3000",
-  credentials: true
-}))
-app.use(express.json());
+const app = express();
+const webOrigin = process.env.WEB_APP_URL ?? "http://localhost:3000";
+const isProduction = process.env.NODE_ENV === "production";
+
+app.use(cookieParser());
+app.use(
+  cors({
+    origin: webOrigin,
+    credentials: true,
+  }),
+);
+app.use(
+  express.json(
+    // {
+    // verify: (request, _response, buffer) => {
+    //   (request as Request).rawBody = Buffer.from(buffer);
+    // },
+  // }
+),
+);
 
 declare global {
   namespace Express {
@@ -24,157 +42,310 @@ declare global {
         id: number;
         email: string;
       };
+      rawBody?: Buffer;
     }
   }
 }
 
-app.post("/signup", async (req: Request, res: Response)=>{
-    try{
-    const {username, email, password} = req.body
-    
-    const existingUser = await prisma.user.findUnique({
-      where:{
-        email
-      }
-    }
-    )
+const credentialsSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(8),
+});
 
-    if(existingUser){
-        return res.status(409).json("User already exists")
+const signupSchema = credentialsSchema.extend({
+  username: z.string().trim().min(2).max(80),
+});
+
+const installationSchema = z.object({
+  installationId: z.string().regex(/^\d+$/),
+  setupAction: z.string().max(80).nullish(),
+});
+
+function authCookieOptions(maxAge: number) {
+  return {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: "lax" as const,
+    domain: process.env.COOKIE_DOMAIN || undefined,
+    path: "/",
+    maxAge,
+  };
+}
+
+async function setAuthCookies(
+  response: Response,
+  user: { id: number; username: string; email: string },
+) {
+  const accessToken = await generateAccessToken(user.id, user.email);
+  const refreshToken = await generateRefreshToken(user.username, user.email);
+
+  response.cookie(
+    "accessToken",
+    accessToken,
+    authCookieOptions(6 * 60 * 60 * 1000),
+  );
+  response.cookie(
+    "refreshToken",
+    refreshToken,
+    authCookieOptions(10 * 24 * 60 * 60 * 1000),
+  );
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { refreshToken },
+  });
+
+  return accessToken;
+}
+
+app.get("/health", (_request, response) => {
+  response.status(200).json({ status: "ok" });
+});
+
+app.post("/signup", async (request: Request, response: Response) => {
+  const parsed = signupSchema.safeParse(request.body);
+  if (!parsed.success) {
+    return response.status(400).json({
+      message:
+        "Enter a valid name, email, and password of at least 8 characters",
+    });
+  }
+
+  try {
+    const { username, email, password } = parsed.data;
+    const existingUser = await prisma.user.findUnique({ where: { email } });
+
+    if (existingUser) {
+      return response.status(409).json({ message: "User already exists" });
     }
 
-    const passwordHash = await bcrypt.hash(password, 10)
-    
-    const refreshToken = await generateRefreshToken(username, email)
-    
     const user = await prisma.user.create({
-      data:{
+      data: {
         username,
         email,
-        password: passwordHash,
-        refreshToken
-      }
-    })
-    
-    res.cookie("refreshToken", refreshToken, {httpOnly: true, secure: false, sameSite: "lax", maxAge: 10 * 24 * 60 * 60 * 1000})
-    const accesshToken = await generateAccessToken(user.id, email)
-    
-    return res.status(200).json({
-        message: "User successfully signed in",
-        accesshToken: accesshToken
-    })
-    }
-    catch(error){
-      console.log(error)
-        res.status(500).json({message: "Signup failed"})
-    }
-}
-)
+        password: await bcrypt.hash(password, 10),
+      },
+    });
+    const accessToken = await setAuthCookies(response, user);
 
-// app.post("signin", authenticate, async(req, res)=>{
-// })
-
-// app.post("/ingest-repo", (req, res)=>{
-//     ingestProducer()
-// })
-
-app.post("/github/webhook", authenticate, async (req: Request, res: Response) => {
-  const event = req.headers["x-github-event"];
-  const deliveryId = String(req.headers["x-github-delivery"] ?? v4());
-  const body = req.body;
-
-  if (event === "installation" && body.action === "created") {
-    const installationId = String(body.installation.id);
-
-    const installation = await prisma.gitInstallation.upsert({
-  where: {
-    installationId: String(body.installation.id),
-  },
-  update: {
-    accountLogin: body.installation.account.login,
-    accountType: body.installation.account.type,
-  },
-  create: {
-    provider: "github",
-    installationId: String(body.installation.id),
-    accountLogin: body.installation.account.login,
-    accountType: body.installation.account.type,
-  },
+    return response.status(201).json({
+      message: "User created successfully",
+      accessToken,
+      user: { id: user.id, username: user.username, email: user.email },
+    });
+  } catch (error) {
+    console.error("Signup error", error);
+    return response.status(500).json({ message: "Signup failed" });
+  }
 });
 
-
-
-    for (const githubRepo of body.repositories ?? []) {
-      const [owner, repoName]: string = githubRepo.full_name.split("/");
-
-      const repo = await prisma.repository.upsert({
-        where: {
-          provider_owner_name: {
-            provider: "github",
-            owner,
-            name: repoName,
-          },
-        },
-        update: {
-          providerRepoId: String(githubRepo.id),
-          repoUrl: githubRepo.html_url,
-          defaultBranch: githubRepo.default_branch ?? "main",
-          // isPrivate: githubRepo.private ?? false,
-        },
-        create: {
-          provider: "github",
-          gitInstallationId: installation.id,
-          providerRepoId: String(githubRepo.id),
-          owner,
-          name: repoName,
-          repoUrl: String(githubRepo.html_url),
-          defaultBranch: String(githubRepo.default_branch) ?? "main",
-          // isPrivate: githubRepo.private ?? false,
-          userId: req.user!.id, // replace with your actual connected user/org owner
-        },
-      });
-
-      // await ingestProducer({
-      //   eventId: deliveryId,
-      //   schemaVersion: 1,
-      //   repositoryId: repo.id,
-      //   installationId,
-      //   provider: "github",
-      //   owner,
-      //   repo: repoName,
-      //   fullName: githubRepo.full_name,
-      //   defaultBranch: githubRepo.default_branch ?? "main",
-      //   cloneUrl: githubRepo.clone_url ?? `https://github.com/${githubRepo.full_name}.git`,
-      //   ingestMode: "initial",
-      //   requestedBy: "installation",
-      //   requestedAt: new Date().toISOString(),
-      // });
-    }
-
-    return res.status(202).json({ message: "Repo ingest jobs queued" });
+app.post("/login", async (request: Request, response: Response) => {
+  const parsed = credentialsSchema.safeParse(request.body);
+  if (!parsed.success) {
+    return response
+      .status(400)
+      .json({ message: "Enter a valid email and password" });
   }
 
-  return res.status(200).json({ message: "Ignored event" });
+  try {
+    const user = await prisma.user.findUnique({
+      where: { email: parsed.data.email },
+    });
+    if (!user || !(await bcrypt.compare(parsed.data.password, user.password))) {
+      return response
+        .status(401)
+        .json({ message: "Invalid email or password" });
+    }
+
+    await setAuthCookies(response, user);
+    return response.status(200).json({
+      message: "Logged in successfully",
+      user: { id: user.id, username: user.username, email: user.email },
+    });
+  } catch (error) {
+    console.error("Login error", error);
+    return response.status(500).json({ message: "Login failed" });
+  }
 });
 
-app.post("/review-run", authenticate, async(req: Request, res: Response)=>{
+app.post("/logout", (_request: Request, response: Response) => {
+  const options = authCookieOptions(0);
+  response.clearCookie("accessToken", options);
+  response.clearCookie("refreshToken", options);
+  return response.status(200).json({ message: "Logged out" });
+});
 
-  // const payload: PrReviewRequestPayload = {
-  //   eventId: string;
-  //   schemaVersion: 1;
-  //   repositoryId: number;
-  //   pullRequestId: number;
-  //   reviewRunId: number;
-  //   installationId: string;
-  //   owner: string;
-  //   repo: string;
-  //   pullNumber: number;
-  //   baseSha: string;
-  //   headSha: string;
-  //   requestedAt:
-  // }
-  // reviewProducer(payload)
-})
+// app.get("/me", authenticate, async (request: Request, response: Response) => {
+//   const user = await prisma.user.findUnique({
+//     where: { id: request.user!.id },
+//     select: { id: true, username: true, email: true },
+//   });
+//   if (!user) return response.status(404).json({ message: "User not found" });
+//   return response.status(200).json({ user });
+// });
 
+app.post(
+  "/github/installations",
+  authenticate,
+  async (request: Request, response: Response) => {
+    const parsed = installationSchema.safeParse(request.body);
+    if (!parsed.success) {
+      return response
+        .status(400)
+        .json({ message: "Invalid GitHub installation ID" });
+    }
 
-app.listen(8080)
+    try {
+      const result = await connectGithubInstallation(
+        request.user!.id,
+        parsed.data.installationId,
+      );
+
+      return response.status(200).json({
+        message: "GitHub installation connected successfully",
+        setupAction: parsed.data.setupAction ?? null,
+        installation: {
+          id: result.installation.id,
+          installationId: result.installation.installationId,
+          accountLogin: result.installation.accountLogin,
+          accountType: result.installation.accountType,
+        },
+        repositoryCount: result.repositories.length,
+      });
+    } catch (error) {
+      console.error("Connect GitHub installation error", error);
+      return response.status(502).json({
+        message:
+          error instanceof Error
+            ? error.message
+            : "Could not connect GitHub installation",
+      });
+    }
+  },
+);
+
+app.get(
+  "/github/installations",
+  authenticate,
+  async (request: Request, response: Response) => {
+    const installations = await prisma.gitInstallation.findMany({
+      where: { userId: request.user!.id },
+      select: {
+        id: true,
+        installationId: true,
+        accountLogin: true,
+        accountType: true,
+        createdAt: true,
+        updatedAt: true,
+        _count: { select: { repository: true } },
+      },
+    });
+    return response.status(200).json({ installations });
+  },
+);
+
+app.get(
+  "/github/repositories",
+  authenticate,
+  async (request: Request, response: Response) => {
+    const repositories = await prisma.repository.findMany({
+      where: { userId: request.user!.id, provider: "github" },
+      orderBy: { updatedAt: "desc" },
+      select: {
+        id: true,
+        owner: true,
+        name: true,
+        repoUrl: true,
+        defaultBranch: true,
+        createdAt: true,
+        updatedAt: true,
+        gitInstallation: {
+          select: { accountLogin: true, accountType: true },
+        },
+        _count: { select: { pullRequests: true } },
+      },
+    });
+    return response.status(200).json({ repositories });
+  },
+);
+
+app.post("/github/webhook", async (request: Request, response: Response) => {
+  const signatureHeader = request.headers["x-hub-signature-256"];
+  const signature = Array.isArray(signatureHeader)
+    ? signatureHeader[0]
+    : signatureHeader;
+
+  if (
+    !request.rawBody ||
+    !verifyGithubWebhookSignature(request.rawBody, signature)
+  ) {
+    return response
+      .status(401)
+      .json({ message: "Invalid GitHub webhook signature" });
+  }
+
+  const eventHeader = request.headers["x-github-event"];
+  const event = Array.isArray(eventHeader) ? eventHeader[0] : eventHeader;
+  const body = request.body as {
+    action?: string;
+    installation?: GitHubInstallation;
+  };
+
+  try {
+    if (event === "ping") {
+      return response.status(200).json({ message: "pong" });
+    }
+
+    if (event === "installation" && body.installation) {
+      if (body.action === "deleted") {
+        await prisma.gitInstallation.updateMany({
+          where: { installationId: String(body.installation.id) },
+          data: { userId: null },
+        });
+        return response
+          .status(200)
+          .json({ message: "Installation disconnected" });
+      }
+
+      await recordGithubInstallation(body.installation);
+      return response.status(202).json({ message: "Installation recorded" });
+    }
+
+    if (event === "installation_repositories" && body.installation) {
+      const installation = await prisma.gitInstallation.findUnique({
+        where: { installationId: String(body.installation.id) },
+      });
+      if (installation?.userId) {
+        await connectGithubInstallation(
+          installation.userId,
+          installation.installationId,
+        );
+      }
+      return response
+        .status(202)
+        .json({ message: "Repository access synchronized" });
+    }
+
+    return response.status(200).json({ message: "Event ignored" });
+  } catch (error) {
+    console.error("GitHub webhook error", error);
+    return response
+      .status(500)
+      .json({ message: "GitHub webhook processing failed" });
+  }
+});
+
+app.post(
+  "/review-run",
+  authenticate,
+  (_request: Request, response: Response) => {
+    return response
+      .status(501)
+      .json({ message: "Review job publishing is not implemented" });
+  },
+);
+
+// const port = Number(process.env.PORT ?? 8080);
+// app.listen(port, () => {
+//   console.log(`Peek-er API listening on port ${port}`);
+// });

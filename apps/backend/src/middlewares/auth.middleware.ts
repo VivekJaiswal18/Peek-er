@@ -1,22 +1,27 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 
-
 type AccesTokenPayload = {
-    sub: string,
-    email: string
-}
+  sub: string;
+  email: string;
+};
 
 export async function authenticate(req: Request, res: Response, next: NextFunction){
     try{
     const authHeader = req.headers.authorization;
 
-    if(!authHeader?.startsWith("Bearer ")){
-        throw new Error("No accessToken provided")
+    const token = authHeader?.startsWith("Bearer ")
+      ? authHeader.slice("Bearer ".length)
+      : req.cookies?.accessToken;
+
+    if (!token) {
+      throw new Error("No accessToken provided");
     }
-    
-    const token = authHeader.split(" ")[1]
-    const decodedToken = await jwt.verify(token, process.env.ACCESS_TOKEN_SECRET!) as AccesTokenPayload
+
+    const decodedToken = (await jwt.verify(
+      token,
+      process.env.ACCESS_TOKEN_SECRET!,
+    )) as AccesTokenPayload;
     // @ts-ignore
     // req.user = decodedToken
     req.user = {

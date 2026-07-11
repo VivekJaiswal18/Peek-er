@@ -394,6 +394,8 @@ node apps/kafka-worker/dist/index.js
 
 | Variable                 | Required                    | Description                                                                       |
 | ------------------------ | --------------------------- | --------------------------------------------------------------------------------- |
+| `NEXT_PUBLIC_API_URL`    | Yes                         | Browser-visible API origin used by signup and login.                              |
+| `BACKEND_URL`            | Yes                         | Server-side API origin used by the GitHub callback and repository loader.         |
 | `GITHUB_APP_SLUG`        | One GitHub install variable | GitHub App slug used to build `https://github.com/apps/{slug}/installations/new`. |
 | `GITHUB_APP_INSTALL_URL` | One GitHub install variable | Explicit installation URL; takes precedence over the slug.                        |
 
@@ -401,16 +403,21 @@ If neither variable is configured, the install endpoint returns the user to `/re
 
 ### API (`apps/backend/.env`)
 
-| Variable               | Required  | Description                                            |
-| ---------------------- | --------- | ------------------------------------------------------ |
-| `DATABASE_URL`         | Yes       | PostgreSQL connection URL consumed by `@repo/db`.      |
-| `ACCESS_TOKEN_SECRET`  | Yes       | Secret used to sign and verify six-hour access tokens. |
-| `REFRESH_TOKEN_SECRET` | Yes       | Secret used to sign ten-day refresh tokens.            |
-| `KAFKA_BROKER`         | For Kafka | Comma-separated broker addresses.                      |
-| `KAFKA_SSL`            | For Kafka | Set to `true` to enable the configured TLS object.     |
-| `KAFKA_CA_CERT`        | For Kafka | Base64-encoded CA certificate.                         |
-| `KAFKA_ACCESS_CERT`    | For Kafka | Base64-encoded client certificate.                     |
-| `KAFKA_ACCESS_KEY`     | For Kafka | Base64-encoded client private key.                     |
+| Variable                | Required   | Description                                                            |
+| ----------------------- | ---------- | ---------------------------------------------------------------------- |
+| `DATABASE_URL`          | Yes        | PostgreSQL connection URL consumed by `@repo/db`.                      |
+| `ACCESS_TOKEN_SECRET`   | Yes        | Secret used to sign and verify six-hour access tokens.                 |
+| `REFRESH_TOKEN_SECRET`  | Yes        | Secret used to sign ten-day refresh tokens.                            |
+| `WEB_APP_URL`           | Yes        | Allowed credentialed CORS origin; defaults to `http://localhost:3000`. |
+| `COOKIE_DOMAIN`         | Production | Shared parent domain when web and API use separate subdomains.         |
+| `GITHUB_APP_ID`         | Yes        | GitHub App ID used to sign App JWTs.                                   |
+| `GITHUB_PRIVATE_KEY`    | Yes        | PEM or base64-encoded GitHub App private key.                          |
+| `GITHUB_WEBHOOK_SECRET` | Yes        | Secret used to verify `X-Hub-Signature-256`.                           |
+| `KAFKA_BROKER`          | For Kafka  | Comma-separated broker addresses.                                      |
+| `KAFKA_SSL`             | For Kafka  | Set to `true` to enable the configured TLS object.                     |
+| `KAFKA_CA_CERT`         | For Kafka  | Base64-encoded CA certificate.                                         |
+| `KAFKA_ACCESS_CERT`     | For Kafka  | Base64-encoded client certificate.                                     |
+| `KAFKA_ACCESS_KEY`      | For Kafka  | Base64-encoded client private key.                                     |
 
 ### Agents (`packages/agents/.env` or process environment)
 
@@ -452,41 +459,49 @@ On macOS, use `base64 < private-key.pem | tr -d '\n'`.
 
 1. Create a GitHub App under a user or organization.
 2. Configure its installation URL through `GITHUB_APP_SLUG` or `GITHUB_APP_INSTALL_URL`.
-3. Point the webhook URL at the publicly reachable API, for example `https://api.example.com/github/webhook`.
-4. Subscribe to installation events. Pull-request events will also be required when the review-trigger path is implemented.
-5. Grant the permissions required by the intended worker flow:
+3. Set the GitHub App **Setup URL** to `http://localhost:3000/api/github/callback` locally, or `https://your-web-domain/api/github/callback` in production, and enable **Redirect on update**.
+4. Point the webhook URL at the publicly reachable API, for example `https://api.example.com/github/webhook`, and configure the same webhook secret in `GITHUB_WEBHOOK_SECRET`.
+5. Subscribe to `Installation` and `Installation repositories` events. Pull-request events will also be required when the review-trigger path is implemented.
+6. Grant the permissions required by the intended worker flow:
    - Repository contents: read.
    - Metadata: read.
    - Pull requests: write if Peek-er will post reviews and inline comments.
-6. Store the App ID and base64-encoded private key in the controller environment.
-
+7. Store the App ID and private key in both the API environment and any controller that requests installation tokens.
+8. Apply the latest Prisma migration, sign in to Peek-er, and use **Connect GitHub repository** on `/repositories`.
 
 ## API and web routes
 
 ### API endpoints
 
-| Method | Route             | Authentication                  | Current behavior                                                                                                    |
-| ------ | ----------------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| `POST` | `/signup`         | Public                          | Checks email uniqueness, hashes the password, creates the user, sets a refresh cookie, and returns an access token. |
-| `POST` | `/github/webhook` | Bearer token currently required | Handles new GitHub App installations and upserts selected repositories.                                             |
-| `POST` | `/review-run`     | Bearer token                    | Placeholder for creating and publishing a PR review job.                                                            |
+| Method | Route                   | Authentication          | Current behavior                                                                                            |
+| ------ | ----------------------- | ----------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `POST` | `/signup`               | Public                  | Creates a user and sets HTTP-only access and refresh cookies.                                               |
+| `POST` | `/login`                | Public                  | Verifies credentials and refreshes both authentication cookies.                                             |
+| `POST` | `/logout`               | Public                  | Clears authentication cookies.                                                                              |
+| `GET`  | `/me`                   | Access cookie or bearer | Returns the current user.                                                                                   |
+| `POST` | `/github/installations` | Access cookie or bearer | Verifies the installation with GitHub, associates it with the user, and synchronizes selected repositories. |
+| `GET`  | `/github/installations` | Access cookie or bearer | Lists the current user's GitHub installations.                                                              |
+| `GET`  | `/github/repositories`  | Access cookie or bearer | Lists synchronized GitHub repositories.                                                                     |
+| `POST` | `/github/webhook`       | GitHub HMAC signature   | Records installation changes and resynchronizes repository access.                                          |
+| `POST` | `/review-run`           | Access cookie or bearer | Placeholder for creating and publishing a PR review job.                                                    |
 
 The API listens on port `8080` and currently allows credentialed CORS requests from `http://localhost:3000`.
 
 ### Web routes
 
-| Route                                         | Purpose                                                  |
-| --------------------------------------------- | -------------------------------------------------------- |
-| `/`                                           | Marketing landing page.                                  |
-| `/signup`, `/login`                           | Authentication UI.                                       |
-| `/dashboard`                                  | Review overview and activity metrics.                    |
-| `/repositories`                               | Connected repository management and GitHub installation. |
-| `/repositories/[owner]/[repo]`                | Repository-level pull requests and health.               |
-| `/repositories/[owner]/[repo]/pulls/[number]` | Detailed agentic PR review workspace.                    |
-| `/repositories/[owner]/[repo]/chat`           | Repository question-and-answer UI.                       |
-| `/findings`                                   | Finding triage and filtering.                            |
-| `/settings`                                   | Provider, automation, indexing, and rule settings.       |
-| `/api/github/connect`                         | Server route that redirects to GitHub App installation.  |
+| Route                                         | Purpose                                                                 |
+| --------------------------------------------- | ----------------------------------------------------------------------- |
+| `/`                                           | Marketing landing page.                                                 |
+| `/signup`, `/login`                           | Authentication UI.                                                      |
+| `/dashboard`                                  | Review overview and activity metrics.                                   |
+| `/repositories`                               | Connected repository management and GitHub installation.                |
+| `/repositories/[owner]/[repo]`                | Repository-level pull requests and health.                              |
+| `/repositories/[owner]/[repo]/pulls/[number]` | Detailed agentic PR review workspace.                                   |
+| `/repositories/[owner]/[repo]/chat`           | Repository question-and-answer UI.                                      |
+| `/findings`                                   | Finding triage and filtering.                                           |
+| `/settings`                                   | Provider, automation, indexing, and rule settings.                      |
+| `/api/github/connect`                         | Server route that redirects to GitHub App installation.                 |
+| `/api/github/callback`                        | GitHub Setup URL callback that completes and persists the installation. |
 
 ## Kafka contracts
 
@@ -579,11 +594,11 @@ Before a public deployment:
 
 High-priority work, based on the current source:
 
-1. Connect the web application to authenticated API queries instead of mock data.
-2. Implement login, token refresh, logout, route protection, and session storage.
-3. Add GitHub webhook HMAC verification and installation-to-user/workspace association.
+1. Replace the remaining dashboard, findings, PR, and chat mock data with authenticated API queries.
+2. Add refresh-token rotation, revocation, protected-route middleware, and session/device management.
+3. Move the installation/user relation to a workspace-aware join table for shared organization installations.
 4. Fix GitHub installation-token request interpolation and request field naming in the controller.
-5. Enable the commented ingestion producer after installation persistence.
+5. Enable the ingestion producer after installation persistence.
 6. Implement `kafka-worker.ts`: clone, parse, summarize, embed, and persist repository context without executing repository code.
 7. Normalize Kafka topic constants, producer topic names, and consumer message envelopes.
 8. Add a review worker that fetches PR diffs/context, invokes `reviewGraph`, stores findings, and schedules comments.
@@ -609,5 +624,3 @@ High-priority work, based on the current source:
 4. Include migrations for schema changes.
 5. Document new environment variables and never commit secrets.
 6. For Kafka changes, update producers, consumers, topic constants, and this README together. -->
-
-
