@@ -108,8 +108,9 @@ jobs:
         env: 
           ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
           IMAGE_TAG: ${{ github.sha }}
+          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
         run: |
-          docker build -t $ECR_REGISTRY/peeker:frontend-$IMAGE_TAG -f apps/web/Dockerfile .
+          docker build --build-arg NEXT_PUBLIC_API_URL="$NEXT_PUBLIC_API_URL" -t $ECR_REGISTRY/peeker:frontend-$IMAGE_TAG -f apps/web/Dockerfile .
           docker push $ECR_REGISTRY/peeker:frontend-$IMAGE_TAG
 
       - name: Install jq
