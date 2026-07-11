@@ -5,7 +5,8 @@ import React, {useState} from "react"
 import {useRouter} from "next/navigation"
 
 // const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
-const API_URL = process.env.NEXT_PUBLIC_API_URL!;
+// const API_URL = process.env.NEXT_PUBLIC_API_URL!;
+const API_URL = "http://peeker-backend-lb-999606264.ap-southeast-2.elb.amazonaws.com";
 
 export default function SignupPage() {
   const router = useRouter();
