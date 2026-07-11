@@ -345,6 +345,7 @@ app.post(
   },
 );
 
+app.listen(8080)
 // const port = Number(process.env.PORT ?? 8080);
 // app.listen(port, () => {
 //   console.log(`Peek-er API listening on port ${port}`);
