@@ -13,10 +13,10 @@ async function loadConnectedRepositories(): Promise<RepositoryView[] | null> {
   const accessToken = (await cookies()).get("accessToken")?.value;
   if (!accessToken) return null;
 
-  const backendUrl =
-    process.env.BACKEND_URL ??
-    process.env.NEXT_PUBLIC_API_URL ??
-    "http://localhost:8080";
+  const backendUrl = "http://peeker-backend-lb-999606264.ap-southeast-2.elb.amazonaws.com"
+    // process.env.BACKEND_URL ??
+    // process.env.NEXT_PUBLIC_API_URL ??  
+    // "http://localhost:8080";
 
   try {
     const response = await fetch(`${backendUrl}/github/repositories`, {

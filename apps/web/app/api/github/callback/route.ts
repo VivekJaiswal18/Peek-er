@@ -1,7 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { appUrl } from "../../../lib/app-url";
 
 function repositoriesUrl(request: NextRequest, status: string) {
-  const url = new URL("/repositories", request.url);
+  const url = appUrl("/repositories", request.url);
   url.searchParams.set("github", status);
   return url;
 }
@@ -16,15 +17,15 @@ export async function GET(request: NextRequest) {
 
   const accessToken = request.cookies.get("accessToken")?.value;
   if (!accessToken) {
-    const loginUrl = new URL("/login", request.url);
+    const loginUrl = appUrl("/login", request.url);
     loginUrl.searchParams.set("github", "authentication-required");
     return NextResponse.redirect(loginUrl);
   }
 
-  const backendUrl =
-    process.env.BACKEND_URL ??
-    process.env.NEXT_PUBLIC_API_URL ??
-    "http://localhost:8080";
+  const backendUrl = "http://peeker-backend-lb-999606264.ap-southeast-2.elb.amazonaws.com"
+    // process.env.BACKEND_URL ??
+    // process.env.NEXT_PUBLIC_API_URL ??
+    // "http://localhost:8080";
 
   try {
     const response = await fetch(`${backendUrl}/github/installations`, {
@@ -38,7 +39,7 @@ export async function GET(request: NextRequest) {
     });
 
     if (response.status === 401) {
-      const loginUrl = new URL("/login", request.url);
+      const loginUrl = appUrl("/login", request.url);
       loginUrl.searchParams.set("github", "authentication-required");
       return NextResponse.redirect(loginUrl);
     }

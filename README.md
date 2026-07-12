@@ -394,6 +394,7 @@ node apps/kafka-worker/dist/index.js
 
 | Variable                 | Required                    | Description                                                                       |
 | ------------------------ | --------------------------- | --------------------------------------------------------------------------------- |
+| `APP_URL`                | Production                  | Public web app origin used to build GitHub setup callback redirects.              |
 | `NEXT_PUBLIC_API_URL`    | Yes                         | Browser-visible API origin used by signup and login.                              |
 | `BACKEND_URL`            | Yes                         | Server-side API origin used by the GitHub callback and repository loader.         |
 | `GITHUB_APP_SLUG`        | One GitHub install variable | GitHub App slug used to build `https://github.com/apps/{slug}/installations/new`. |
